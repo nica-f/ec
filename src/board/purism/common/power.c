@@ -30,13 +30,13 @@
     #define DEEP_SX 0
 #endif
 
-#ifndef HAVE_EC_EN
-    #define HAVE_EC_EN 1
-#endif
+//#ifndef HAVE_EC_EN
+//    #define HAVE_EC_EN 1
+//#endif
 
-#ifndef HAVE_LAN_WAKEUP_N
-    #define HAVE_LAN_WAKEUP_N 1
-#endif
+//#ifndef HAVE_LAN_WAKEUP_N
+//    #define HAVE_LAN_WAKEUP_N 1
+//#endif
 
 #ifndef HAVE_LED_BAT_CHG
     #define HAVE_LED_BAT_CHG 1
@@ -46,9 +46,9 @@
     #define HAVE_LED_BAT_FULL 1
 #endif
 
-#ifndef HAVE_PCH_DPWROK_EC
-    #define HAVE_PCH_DPWROK_EC 1
-#endif
+//#ifndef HAVE_PCH_DPWROK_EC
+//    #define HAVE_PCH_DPWROK_EC 1
+//#endif
 
 #ifndef HAVE_PCH_PWROK_EC
     #define HAVE_PCH_PWROK_EC 1
@@ -61,17 +61,17 @@
 #ifndef HAVE_XLP_OUT
     #define HAVE_XLP_OUT 1
 #endif
-#ifndef HAVE_SUSWARN_N
-    #define HAVE_SUSWARN_N 1
-#endif
+//#ifndef HAVE_SUSWARN_N
+//    #define HAVE_SUSWARN_N 1
+//#endif
 
-#ifndef HAVE_SUS_PWR_ACK
-    #define HAVE_SUS_PWR_ACK 1
-#endif
+//#ifndef HAVE_SUS_PWR_ACK
+//    #define HAVE_SUS_PWR_ACK 1
+//#endif
 
-#ifndef HAVE_VA_EC_EN
-    #define HAVE_VA_EC_EN 1
-#endif
+//#ifndef HAVE_VA_EC_EN
+//    #define HAVE_VA_EC_EN 1
+//#endif
 
 #ifndef HAVE_XLP_OUT
     #define HAVE_XLP_OUT 1
@@ -121,6 +121,7 @@ enum PowerState power_state = POWER_STATE_DEFAULT;
 enum PowerState calculate_power_state(void) {
     //TODO: Deep Sx states using SLP_SUS#
 
+#if 0
     if (gpio_get(&SUSB_N_PCH)) {
         // S3, S4, and S5 planes powered
         return POWER_STATE_S0;
@@ -130,6 +131,7 @@ enum PowerState calculate_power_state(void) {
         // S4 and S5 planes powered
         return POWER_STATE_S3;
     }
+#endif
 
     if (gpio_get(&EC_RSMRST_N)) {
         // S5 plane powered

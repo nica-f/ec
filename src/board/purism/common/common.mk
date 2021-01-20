@@ -13,19 +13,19 @@ CFLAGS+=-DLEVEL=4
 #CFLAGS+=-DPARALLEL_DEBUG
 
 # Uncomment to enable I2C debug on 0x76
-#CFLAGS+=-DI2C_DEBUGGER=0x76
+CFLAGS+=-DI2C_DEBUGGER=0x76
 
 # Set external programmer
 PROGRAMMER=$(wildcard /dev/serial/by-id/usb-Arduino*)
 
-# Include system76 common source
+# Include purism common source
 PURISM_COMMON_DIR=src/board/purism/common
 SRC+=$(wildcard $(PURISM_COMMON_DIR)/*.c)
 INCLUDE+=$(wildcard $(PURISM_COMMON_DIR)/include/common/*.h) $(PURISM_COMMON_DIR)/common.mk
 CFLAGS+=-I$(PURISM_COMMON_DIR)/include
 
 # Add charger
-CHARGER?=bq24780s
+CHARGER?=bq24715
 SRC+=$(PURISM_COMMON_DIR)/charger/$(CHARGER).c
 
 # Add kbled

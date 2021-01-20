@@ -7,8 +7,9 @@
 extern uint8_t main_cycle;
 
 void board_init(void) {
+#if 0
     // Allow CPU to boot
-    gpio_set(&SB_KBCRST_N, true);
+//    gpio_set(&SB_KBCRST_N, true);
     // Allow backlight to be turned on
     gpio_set(&BKL_EN, true);
     // Enable camera
@@ -23,6 +24,7 @@ void board_init(void) {
     gpio_set(&SCI_N, true);
     gpio_set(&SMI_N, true);
     gpio_set(&SWI_N, true);
+#endif
 }
 
 void board_on_ac(bool ac) { /* Fix unused variable */ ac = ac; }
