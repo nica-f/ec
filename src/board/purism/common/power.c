@@ -132,6 +132,15 @@ enum PowerState calculate_power_state(void) {
         return POWER_STATE_S3;
     }
 #endif
+    if (gpio_get(&PM_SLP_S0)) {
+        // S3, S4, and S5 planes powered
+        return POWER_STATE_S0;
+    }
+
+    if (gpio_get(&PM_SLP_S3)) {
+        // S4 and S5 planes powered
+        return POWER_STATE_S3;
+    }
 
     if (gpio_get(&EC_RSMRST_N)) {
         // S5 plane powered
@@ -229,6 +238,7 @@ void power_on_s5(void) {
     // avoid leakage
     GPIO_SET_DEBUG(VA_EC_EN, true);
 #endif // HAVE_VA_EC_EN
+
     tPCH06;
 
     // Enable VDD5
@@ -261,6 +271,9 @@ void power_on_s5(void) {
     // avoid leakage
     GPIO_SET_DEBUG(VA_EC_EN, true);
 #endif // HAVE_VA_EC_EN
+    GPIO_SET_DEBUG(V095A_EN, true);
+    GPIO_SET_DEBUG(V105A_EN, true);
+
     tPCH06;
 
     // Enable VDD5
@@ -336,6 +349,9 @@ void power_off_s5(void) {
     // Disable VDD5
     GPIO_SET_DEBUG(DD_ON, false);
     tPCH12;
+
+    GPIO_SET_DEBUG(V095A_EN, false);
+    GPIO_SET_DEBUG(V105A_EN, false);
 
 #if HAVE_VA_EC_EN
     // Disable VCCPRIM_* planes

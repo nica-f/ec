@@ -141,6 +141,15 @@ struct Gpio __code VR_ON =          GPIO(B, 5);		//
 struct Gpio __code WLAN_EN =        GPIO(D, 5);		//
 struct Gpio __code WLAN_PWR_EN =    GPIO(D, 0);		// 
 
+struct Gpio __code V095A_EN =       GPIO(F, 1);
+struct Gpio __code V095A_PWRGD =    GPIO(E, 2);
+struct Gpio __code V105A_EN =       GPIO(G, 6);
+struct Gpio __code V105A_PWRGD =    GPIO(A, 7);
+
+struct Gpio __code PM_SLP_S0 =    GPIO(B, 0);
+struct Gpio __code PM_SLP_S3 =    GPIO(I, 4);
+struct Gpio __code PM_SLP_S4 =    GPIO(I, 3);
+
 void gpio_init() {
     GCR = 0x04;			// Enable LPC reset on GPD2
 

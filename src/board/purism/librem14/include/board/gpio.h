@@ -51,6 +51,15 @@ extern struct Gpio __code VA_EC_EN;
 extern struct Gpio __code VR_ON;
 extern struct Gpio __code WLAN_EN;
 extern struct Gpio __code WLAN_PWR_EN;
+
+extern struct Gpio __code V095A_EN;
+extern struct Gpio __code V095A_PWRGD;
+extern struct Gpio __code V105A_EN;
+extern struct Gpio __code V105A_EN;
+
+extern struct Gpio __code PM_SLP_S0;
+extern struct Gpio __code PM_SLP_S3;
+extern struct Gpio __code PM_SLP_S4;
 #define HAVE_XLP_OUT 0
 
 #endif // _BOARD_GPIO_H
