@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
-EC=it8587e
+//EC=it8587e
+EC=it8528e
 
 # Add keymap to src
 KEYMAP?=default
