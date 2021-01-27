@@ -30,13 +30,13 @@
     #define DEEP_SX 0
 #endif
 
-//#ifndef HAVE_EC_EN
-//    #define HAVE_EC_EN 1
-//#endif
+#ifndef HAVE_EC_EN
+    #define HAVE_EC_EN 0
+#endif
 
-//#ifndef HAVE_LAN_WAKEUP_N
-//    #define HAVE_LAN_WAKEUP_N 1
-//#endif
+#ifndef HAVE_LAN_WAKEUP_N
+    #define HAVE_LAN_WAKEUP_N 0
+#endif
 
 #ifndef HAVE_LED_BAT_CHG
     #define HAVE_LED_BAT_CHG 1
@@ -46,9 +46,9 @@
     #define HAVE_LED_BAT_FULL 1
 #endif
 
-//#ifndef HAVE_PCH_DPWROK_EC
-//    #define HAVE_PCH_DPWROK_EC 1
-//#endif
+#ifndef HAVE_PCH_DPWROK_EC
+    #define HAVE_PCH_DPWROK_EC 1
+#endif
 
 #ifndef HAVE_PCH_PWROK_EC
     #define HAVE_PCH_PWROK_EC 1
@@ -61,17 +61,17 @@
 #ifndef HAVE_XLP_OUT
     #define HAVE_XLP_OUT 1
 #endif
-//#ifndef HAVE_SUSWARN_N
-//    #define HAVE_SUSWARN_N 1
-//#endif
+#ifndef HAVE_SUSWARN_N
+    #define HAVE_SUSWARN_N 0
+#endif
 
-//#ifndef HAVE_SUS_PWR_ACK
-//    #define HAVE_SUS_PWR_ACK 1
-//#endif
+#ifndef HAVE_SUS_PWR_ACK
+    #define HAVE_SUS_PWR_ACK 0
+#endif
 
-//#ifndef HAVE_VA_EC_EN
-//    #define HAVE_VA_EC_EN 1
-//#endif
+#ifndef HAVE_VA_EC_EN
+    #define HAVE_VA_EC_EN 1
+#endif
 
 #ifndef HAVE_XLP_OUT
     #define HAVE_XLP_OUT 1
@@ -132,21 +132,21 @@ enum PowerState calculate_power_state(void) {
         return POWER_STATE_S3;
     }
 #endif
-    if (gpio_get(&PM_SLP_S0)) {
+    if (gpio_get(&PM_SLP_S3)) {
         // S3, S4, and S5 planes powered
         return POWER_STATE_S0;
     }
 
-    if (gpio_get(&PM_SLP_S3)) {
+    if (gpio_get(&PM_SLP_S4)) {
         // S4 and S5 planes powered
         return POWER_STATE_S3;
     }
-
+#if 0
     if (gpio_get(&EC_RSMRST_N)) {
         // S5 plane powered
         return POWER_STATE_S5;
     }
-
+#endif
 #if HAVE_PCH_DPWROK_EC && DEEP_SX
     if (!gpio_get(&PCH_DPWROK_EC)) {
         return POWER_STATE_DEFAULT;
@@ -225,42 +225,6 @@ void power_on_ds5(void) {
 void power_on_s5(void) {
     DEBUG("%02X: power_on_s5\n", main_cycle);
 
-#if DEEP_SX
-    // See Figure 12-18 in Whiskey Lake Platform Design Guide
-    // TODO - signal timing graph
-    // See Figure 12-24 in Whiskey Lake Platform Design Guide
-    // TODO - rail timing graph
-
-    // TODO: Must have SL_SUS# set high by PCH
-
-#if HAVE_VA_EC_EN
-    // Enable VCCPRIM_* planes - must be enabled prior to USB power in order to
-    // avoid leakage
-    GPIO_SET_DEBUG(VA_EC_EN, true);
-#endif // HAVE_VA_EC_EN
-
-    tPCH06;
-
-    // Enable VDD5
-    GPIO_SET_DEBUG(DD_ON, true);
-
-    //TODO: Should SUS_ACK# be de-asserted here?
-    tPCH03;
-
-    // De-assert RSMRST#
-    GPIO_SET_DEBUG(EC_RSMRST_N, true);
-
-    // Wait for PCH stability
-    tPCH18;
-
-#if HAVE_EC_EN
-    // Allow processor to control SUSB# and SUSC#
-    GPIO_SET_DEBUG(EC_EN, true);
-#endif // HAVE_EC_EN
-
-    // Extra wait - TODO remove
-    delay_ms(200);
-#else // DEEP_SX
     // See Figure 12-19 in Whiskey Lake Platform Design Guide
     // TODO - signal timing graph
     // See Figure 12-25 in Whiskey Lake Platform Design Guide
@@ -274,7 +238,11 @@ void power_on_s5(void) {
     GPIO_SET_DEBUG(V095A_EN, true);
     GPIO_SET_DEBUG(V105A_EN, true);
 
+    tPCH06; //
+    GPIO_SET_DEBUG(ROP_VCCST_PWRGD, true)
+
     tPCH06;
+    GPIO_SET_DEBUG(ALL_SYS_PWRGD_VRON, true)
 
     // Enable VDD5
     GPIO_SET_DEBUG(DD_ON, true);
@@ -290,11 +258,13 @@ void power_on_s5(void) {
     GPIO_SET_DEBUG(PCH_DPWROK_EC, true);
 #endif // HAVE_PCH_DPWROK_EC
 
+    DEBUG("A\n");
     // De-assert RSMRST#
     GPIO_SET_DEBUG(EC_RSMRST_N, true);
 
     // Wait for PCH stability
     tPCH18;
+    DEBUG("B\n");
 
 #if HAVE_EC_EN
     // Allow processor to control SUSB# and SUSC#
@@ -304,8 +274,10 @@ void power_on_s5(void) {
     // Wait for SUSPWRDNACK validity
     tPLT01;
 
+    DEBUG("C\n");
     for (int i = 0; i < 1000; i++) {
         // If we reached S0, exit this loop
+    // DEBUG("%02X: wait S0\n", main_cycle);
         update_power_state();
         if (power_state == POWER_STATE_S0) {
             break;
@@ -319,9 +291,10 @@ void power_on_s5(void) {
         // Extra wait until SUSPWRDNACK is valid
         delay_ms(1);
     }
-#endif // DEEP_SX
+    DEBUG("D\n");
 
     update_power_state();
+    DEBUG("E\n");
 }
 
 void power_off_s5(void) {
@@ -476,7 +449,8 @@ void power_event(void) {
 
     // If system power is good
     static bool pg_last = false;
-    bool pg_new = gpio_get(&ALL_SYS_PWRGD);
+    //bool pg_new = gpio_get(&ALL_SYS_PWRGD);
+    bool pg_new = gpio_get(&V095A_PWRGD) && gpio_get(&V105A_PWRGD);
     if (pg_new && !pg_last) {
         DEBUG("%02X: ALL_SYS_PWRGD asserted\n", main_cycle);
 

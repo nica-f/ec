@@ -42,7 +42,7 @@ GPD6	GPIO	IN	KBC_FAN_SPEED		fan 0 tacho input
 GPD7	GPIO	IN	KBC_FAN_SPEED1		fan 1 tacho input
 
 GPE0	GPIO	IN	LED_ON			LCD LED backlight enable
-GPE1	GPIO	OUT	SMC_SHUTDOWN#
+GPE1	GPIO	OUT	SMC_SHUTDOWN#		DC latch
 GPE2	GPIO	IN	+V0.95A_PWRGD
 GPE3	GPIO	OUT	EC_MUTE#		mute audio DAC?
 GPE4	GPIO	IN	SMC_ONOFF#
@@ -105,7 +105,7 @@ KSO0 - KSO15 / KSI0 - KSI7  keyboard matrix
 
 struct Gpio __code ACIN_N =         GPIO(I, 5);		// ADP_IN#
 struct Gpio __code AC_PRESENT =     GPIO(C, 4);		// AC_PRESENT
-struct Gpio __code ALL_SYS_PWRGD =  GPIO(B, 5);		// ALL_SYS_PWRGD_VRON
+//struct Gpio __code ALL_SYS_PWRGD =  GPIO(B, 5);		// ALL_SYS_PWRGD_VRON
 struct Gpio __code BKL_EN =         GPIO(E, 0);		// LED_ON
 struct Gpio __code BT_EN =          GPIO(C, 7);		// BT_ON
 struct Gpio __code BUF_PLT_RST_N =  GPIO(D, 2);
@@ -120,10 +120,10 @@ struct Gpio __code LED_BAT_CHG =    GPIO(J, 4);		//
 struct Gpio __code LED_BAT_FULL =   GPIO(J, 5);		//
 struct Gpio __code LED_PWR =        GPIO(C, 5);		//
 struct Gpio __code LID_SW_N =       GPIO(H, 6);		//
-// struct Gpio __code PCH_DPWROK_EC =  GPIO(A, 3);
-struct Gpio __code PCH_PWROK_EC =   GPIO(E, 5);		// SYS PWR OK
+struct Gpio __code PCH_DPWROK_EC =  GPIO(F, 5);		// DSW_PWROK -> DPW_PWROK -> A_POWER_OK
+struct Gpio __code PCH_PWROK_EC =   GPIO(G, 1);		//
 // struct Gpio __code PM_CLKRUN_N =    GPIO(H, 0);
-struct Gpio __code PM_PWROK =       GPIO(G, 1);		// PCH PWR OK
+struct Gpio __code PM_PWROK =       GPIO(E, 5);		// SYS PWR OK ???
 struct Gpio __code PWR_BTN_N =      GPIO(H, 4);		// out, power button to sys
 struct Gpio __code PWR_SW_N =       GPIO(E, 4);		// in, power switch state ?
 // struct Gpio __code SB_KBCRST_N =    GPIO(E, 6);
@@ -136,8 +136,8 @@ struct Gpio __code SMI_N =          GPIO(D, 4);		//
 //struct Gpio __code SUS_PWR_ACK =    GPIO(J, 0);
 struct Gpio __code SWI_N =          GPIO(D, 3);		// ECSCI#
 struct Gpio __code USB_PWR_EN_N =   GPIO(I, 7);		// type-C +5V enable
-// struct Gpio __code VA_EC_EN =       GPIO(E, 3);
-struct Gpio __code VR_ON =          GPIO(B, 5);		//
+struct Gpio __code VA_EC_EN =       GPIO(E, 1);
+//struct Gpio __code VR_ON =          GPIO(B, 5);		//
 struct Gpio __code WLAN_EN =        GPIO(D, 5);		//
 struct Gpio __code WLAN_PWR_EN =    GPIO(D, 0);		// 
 
@@ -145,6 +145,9 @@ struct Gpio __code V095A_EN =       GPIO(F, 1);
 struct Gpio __code V095A_PWRGD =    GPIO(E, 2);
 struct Gpio __code V105A_EN =       GPIO(G, 6);
 struct Gpio __code V105A_PWRGD =    GPIO(A, 7);
+struct Gpio __code ALL_SYS_PWRGD_VRON =    GPIO(B, 5);		// ALL_SYS_PWRGD_VRON
+struct Gpio __code ROP_VCCST_PWRGD =    GPIO(F, 2);		// ROP_VCCST_PWRGD
+
 
 struct Gpio __code PM_SLP_S0 =    GPIO(B, 0);
 struct Gpio __code PM_SLP_S3 =    GPIO(I, 4);
@@ -166,7 +169,7 @@ void gpio_init() {
     GPCRA6 = GPIO_IN;		// V1.05A_PWRGD
 
     // GPIO port B
-    GPDRB = (1 << 1);		// enable capslock LED for feedback
+    GPDRB = (1 << 6);		// enable capslock LED for feedback
 
     GPCRB0 = GPIO_IN;		// PM_SLP_S0#
     GPCRB1 = GPIO_OUT;		// capslock LED
@@ -174,11 +177,11 @@ void gpio_init() {
     GPCRB3 = GPIO_ALT;		// SMB_CLK_BT - battery gas gauge
     GPCRB4 = GPIO_ALT;		// SMB_DATA_BT - battery gas gauge
     GPCRB5 = GPIO_OUT;		// ALL_SYS_PWRGD_VRON
-    GPCRB6 = GPIO_IN;		// EC_PCH_RCIN#
+    GPCRB6 = GPIO_OUT;		// EC_PCH_RCIN#
     GPCRB7 = GPIO_OUT;		// PM_RSMRST#
 
     // GPIO port C
-    GPDRC = 0x00;
+    GPDRC = 0x20;
 
     GPCRC0 = GPIO_OUT;		// POWER_TP_ON
     GPCRC1 = GPIO_ALT;		// I2C_CLK1, NA
@@ -202,7 +205,7 @@ void gpio_init() {
     GPCRD7 = GPIO_ALT;		// fan 1 tacho input
 
     // GPIO port E
-    GPDRE = 0x00;
+    GPDRE = 0x80 | 0x01 /*(1 << 7)*/;		// disable BAT_LOW
 
     GPCRE0 = GPIO_OUT;		// LCD LED backlight enable
     GPCRE1 = GPIO_OUT;		// system power off, SMC_SHUTDOWN#
@@ -214,7 +217,7 @@ void gpio_init() {
     GPCRE7 = GPIO_OUT;		// PM_BATLOW#
     
     // GPIO port F
-    GPDRF = (1 << 6);
+    GPDRF = (0x20); // ???
     GPCRF0 = GPIO_OUT;		// audio codec SPDIF0/GPIO2 -> toggle for headphone mic input
     GPCRF1 = GPIO_OUT;		// +V0.95A_EN
     GPCRF2 = GPIO_OUT;		// ROP_VCCST_PWRGD
@@ -246,7 +249,7 @@ void gpio_init() {
     GPCRH7 = GPIO_IN;		// NA
     
     // GPIO port I
-    GPDRI = 0x00;
+    GPDRI = 0x80; // ???
 
     GPCRI0 = GPIO_IN;		// Chager_IOUT, BQ24715 IOUT
     GPCRI1 = GPIO_IN;		// +VBAT detect
@@ -258,9 +261,9 @@ void gpio_init() {
     GPCRI7 = GPIO_OUT;		// type-C USB port 5V power enable
     
     // GPIO port J
-    GPDRJ = (1 << 2);		// camera on
+    GPDRJ = /*(1 << 0) |*/ (1 << 2) | (1 << 5);		// camera on
 
-    GPCRJ0 = GPIO_IN;		// PROCHOT#_EC, CPU overheat
+    GPCRJ0 = GPIO_OUT;		// PROCHOT#_EC, device overheat
     GPCRJ1 = GPIO_OUT;		// DIS_BAT
     GPCRJ2 = GPIO_OUT;		// camera power on
     GPCRJ3 = GPIO_IN;		// NA

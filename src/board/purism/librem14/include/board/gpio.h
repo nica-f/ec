@@ -55,7 +55,9 @@ extern struct Gpio __code WLAN_PWR_EN;
 extern struct Gpio __code V095A_EN;
 extern struct Gpio __code V095A_PWRGD;
 extern struct Gpio __code V105A_EN;
-extern struct Gpio __code V105A_EN;
+extern struct Gpio __code V105A_PWRGD;
+extern struct Gpio __code ALL_SYS_PWRGD_VRON;
+extern struct Gpio __code ROP_VCCST_PWRGD;
 
 extern struct Gpio __code PM_SLP_S0;
 extern struct Gpio __code PM_SLP_S3;

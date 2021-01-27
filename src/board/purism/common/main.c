@@ -88,7 +88,7 @@ void main(void) {
     gpio_debug();
 #endif
 
-    INFO("System76 EC board '%s', version '%s'\n", board(), version());
+    INFO("Purism EC board '%s', version '%s'\n", board(), version());
 
     uint32_t last_time = 0;
     for(main_cycle = 0; ; main_cycle++) {
