@@ -82,7 +82,7 @@ volatile uint8_t __xdata __at(0x1C1C) SLSTAB;
 volatile uint8_t __xdata __at(0x1C1D) SICRB;
 // Notify device address for channel B
 volatile uint8_t __xdata __at(0x1C1E) NDADRB;
-// Notify data low byte for channel A
+// Notify data low byte for channel B
 volatile uint8_t __xdata __at(0x1C1F) NDLBB;
 // Notify data high byte for channel B
 volatile uint8_t __xdata __at(0x1C20) NDHBB;
@@ -92,6 +92,53 @@ volatile uint8_t __xdata __at(0x1C21) HOCTL2B;
 volatile uint8_t __xdata __at(0x1C44) RESLADR2B;
 // SMCLK timing setting for channel B
 volatile uint8_t __xdata __at(0x1C41) SCLKTSB;
+
+// Host status for channel C (master only)
+volatile uint8_t __xdata __at(0x1C29) HOSTAC;
+// Host control for channel C
+volatile uint8_t __xdata __at(0x1C2A) HOCTLC;
+// Host command for channel C
+volatile uint8_t __xdata __at(0x1C2B) HOCMDC;
+// Transmit slave address for channel C
+volatile uint8_t __xdata __at(0x1C2C) TRASLAC;
+// Host data 0 for channel C
+volatile uint8_t __xdata __at(0x1C2D) D0REGC;
+// Host data 1 for channel C
+volatile uint8_t __xdata __at(0x1C2E) D1REGC;
+// Host block data byte for channel C
+volatile uint8_t __xdata __at(0x1C2F) HOBDBC;
+// Packet error check for channel C
+volatile uint8_t __xdata __at(0x1C30) PECERCC;
+// SMBus pin control for channel C
+volatile uint8_t __xdata __at(0x1C31) SMBPCTLC;
+// Host control 2 for channel C
+volatile uint8_t __xdata __at(0x1C32) HOCTL2C;
+// SMCLK timing setting for channel C
+volatile uint8_t __xdata __at(0x1C42) SCLKTSC;
+
+// Host status for channel D (master only)
+volatile uint8_t __xdata __at(0x1C35) HOSTAD;
+// Host control for channel D
+volatile uint8_t __xdata __at(0x1C36) HOCTLD;
+// Host command for channel D
+volatile uint8_t __xdata __at(0x1C37) HOCMDD;
+// Transmit slave address for channel D
+volatile uint8_t __xdata __at(0x1C38) TRASLAD;
+// Host data 0 for channel D
+volatile uint8_t __xdata __at(0x1C39) D0REGD;
+// Host data 1 for channel D
+volatile uint8_t __xdata __at(0x1C3A) D1REGD;
+// Host block data byte for channel D
+volatile uint8_t __xdata __at(0x1C3B) HOBDBD;
+// Packet error check for channel D
+volatile uint8_t __xdata __at(0x1C3C) PECERCD;
+// SMBus pin control for channel D
+volatile uint8_t __xdata __at(0x1C3D) SMBPCTLD;
+// Host control 2 for channel D
+volatile uint8_t __xdata __at(0x1C3E) HOCTL2D;
+// SMCLK timing setting for channel D
+volatile uint8_t __xdata __at(0x1C43) SCLKTSD;
+
 
 // Timing registers
 volatile uint8_t __xdata __at(0x1C22) SMB4P7USL;

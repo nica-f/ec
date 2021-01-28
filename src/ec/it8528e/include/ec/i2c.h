@@ -7,6 +7,8 @@
 
 extern struct I2C __code I2C_0;
 extern struct I2C __code I2C_1;
+extern struct I2C __code I2C_2;
+extern struct I2C __code I2C_3;
 
 void i2c_reset(struct I2C * i2c, bool kill);
 
