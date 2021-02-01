@@ -62,6 +62,8 @@ extern struct Gpio __code ROP_VCCST_PWRGD;
 extern struct Gpio __code PM_SLP_S0;
 extern struct Gpio __code PM_SLP_S3;
 extern struct Gpio __code PM_SLP_S4;
+
+extern struct Gpio __code POWER_TP_ON;
 #define HAVE_XLP_OUT 0
 
 #endif // _BOARD_GPIO_H

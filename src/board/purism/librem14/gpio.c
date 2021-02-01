@@ -148,10 +148,11 @@ struct Gpio __code V105A_PWRGD =    GPIO(A, 7);
 struct Gpio __code ALL_SYS_PWRGD_VRON =    GPIO(B, 5);		// ALL_SYS_PWRGD_VRON
 struct Gpio __code ROP_VCCST_PWRGD =    GPIO(F, 2);		// ROP_VCCST_PWRGD
 
-
 struct Gpio __code PM_SLP_S0 =    GPIO(B, 0);
 struct Gpio __code PM_SLP_S3 =    GPIO(I, 4);
 struct Gpio __code PM_SLP_S4 =    GPIO(I, 3);
+
+struct Gpio __code POWER_TP_ON =    GPIO(C, 0);
 
 void gpio_init() {
     GCR = 0x04;			// Enable LPC reset on GPD2
@@ -183,7 +184,7 @@ void gpio_init() {
     // GPIO port C
     GPDRC = 0x20;
 
-    GPCRC0 = GPIO_OUT;		// POWER_TP_ON
+    GPCRC0 = GPIO_OUT;		// POWER_TP_ON, touchpad power on
     GPCRC1 = GPIO_ALT;		// I2C_CLK1, NA
     GPCRC2 = GPIO_ALT;		// I2C_DATA1, NA
     GPCRC3 = GPIO_IN;		// PM_SLP_SUS#, NA

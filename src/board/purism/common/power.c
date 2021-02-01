@@ -293,12 +293,16 @@ void power_on_s5(void) {
     }
     DEBUG("D\n");
 
+    GPIO_SET_DEBUG(POWER_TP_ON, true);
+
     update_power_state();
     DEBUG("E\n");
 }
 
 void power_off_s5(void) {
     DEBUG("%02X: power_off_s5\n", main_cycle);
+
+    GPIO_SET_DEBUG(POWER_TP_ON, false);
 
 #if DEEP_SX
     // TODO
