@@ -141,12 +141,10 @@ enum PowerState calculate_power_state(void) {
         // S4 and S5 planes powered
         return POWER_STATE_S3;
     }
-#if 0
     if (gpio_get(&EC_RSMRST_N)) {
         // S5 plane powered
         return POWER_STATE_S5;
     }
-#endif
 #if HAVE_PCH_DPWROK_EC && DEEP_SX
     if (!gpio_get(&PCH_DPWROK_EC)) {
         return POWER_STATE_DEFAULT;
