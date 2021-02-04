@@ -3,6 +3,7 @@
 #include <board/battery.h>
 #include <board/board.h>
 #include <board/gpio.h>
+#include <ec/pwm.h>
 
 extern uint8_t main_cycle;
 
@@ -25,8 +26,27 @@ void board_init(void) {
     gpio_set(&SMI_N, true);
     gpio_set(&SWI_N, true);
 #endif
+
+    // Turn on CPU fan a bit (further temperature control in peci_event)
+    DCR0 = 0x70;
+    DCR1 = 0x70;
+
+    // turn off notification LED RGB
+    DCR2 = 0xe0; // B
+    DCR3 = 0xe0; // G
+    DCR4 = 0xe0; // R
+
+    // enable power LED control full brightness
+    DCR5 = 0xff;
+
+    // enable keyboard backlight
+    DCR6 = 0xff;
 }
 
-void board_on_ac(bool ac) { /* Fix unused variable */ ac = ac; }
+void board_on_ac(bool ac) {
+    /* Fix unused variable */
+    ac = ac;
+}
 
-void board_event(void) {}
+void board_event(void) {
+}
