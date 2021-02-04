@@ -61,5 +61,19 @@ volatile uint8_t __xdata __at(0x180F) PCSGR;
 volatile uint8_t __xdata __at(0x1823) ZTIER;
 // Tachometer switch control register
 volatile uint8_t __xdata __at(0x1848) TSWCTLR;
+// PWM Output Open-Drain Enable Register
+volatile uint8_t __xdata __at(0x1849) PWMODENR;
+// PWM0 LED Dimming Enable
+volatile uint8_t __xdata __at(0x1850) PWM0LHE;
+// PWM0 LED Dimming Control Register 1
+volatile uint8_t __xdata __at(0x1851) PWM0LCR1;
+// PWM0 LED Dimming Control Register 2
+volatile uint8_t __xdata __at(0x1851) PWM0LCR2;
+// PWM1 LED Dimming Enable
+volatile uint8_t __xdata __at(0x1852) PWM1LHE;
+// PWM1 LED Dimming Control Register 1
+volatile uint8_t __xdata __at(0x1853) PWM1LCR1;
+// PWM1 LED Dimming Control Register 2
+volatile uint8_t __xdata __at(0x1854) PWM1LCR2;
 
 #endif // _EC_PWM_H
