@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
-//EC=it8587e
 EC=it8528e
 
 # Add keymap to src
@@ -18,9 +17,6 @@ CFLAGS+=-DI2C_BATTERY=I2C_0
 
 # Set I2C bus for debug output
 CFLAGS+=-DI2C_DEBUGBUS=I2C_0
-
-# Set touchpad PS2 bus
-#CFLAGS+=-DPS2_TOUCHPAD=PS2_3
 
 # Set smart charger parameters
 CFLAGS+=\
