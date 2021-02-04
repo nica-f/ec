@@ -49,11 +49,11 @@
 }
 
 // Position of physical Esc key in the matrix
-#define MATRIX_ESC_INPUT    7
-#define MATRIX_ESC_OUTPUT   7
+#define MATRIX_ESC_INPUT    4
+#define MATRIX_ESC_OUTPUT   10
 
 // Position of physical Fn key in the matrix
-#define MATRIX_FN_INPUT     3
-#define MATRIX_FN_OUTPUT    17
+#define MATRIX_FN_INPUT     2
+#define MATRIX_FN_OUTPUT    13
 
 #endif // _BOARD_KEYMAP_H
