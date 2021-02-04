@@ -17,9 +17,11 @@ uint8_t __code __at(SCRATCH_OFFSET) scratch_rom[] = {
 // Enter or exit scratch ROM
 void scratch_trampoline(void) {
     // Set fans to 100%
+#if 0
     DCR2 = 0xFF;
 #if HAVE_DGPU
     DCR4 = 0xFF;
+#endif
 #endif
 
     //TODO: Clear keyboard presses
