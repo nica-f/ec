@@ -116,8 +116,8 @@ struct Gpio __code EC_RSMRST_N =    GPIO(B, 7);		//
 // struct Gpio __code LAN_WAKEUP_N =   GPIO(B, 2);
 struct Gpio __code LED_ACIN =       GPIO(C, 5);		// pwr white LED, temporary
 struct Gpio __code LED_AIRPLANE_N = GPIO(F, 3);		// WiFi HKS LED
-struct Gpio __code LED_BAT_CHG =    GPIO(J, 4);		// 
-struct Gpio __code LED_BAT_FULL =   GPIO(J, 5);		//
+struct Gpio __code LED_BAT_CHG =    GPIO(J, 4);		// orange LED
+struct Gpio __code LED_BAT_FULL =   GPIO(J, 5);		// green LED
 struct Gpio __code LED_PWR =        GPIO(C, 5);		//
 struct Gpio __code LID_SW_N =       GPIO(H, 6);		//
 struct Gpio __code PCH_DPWROK_EC =  GPIO(F, 5);		// DSW_PWROK -> DPW_PWROK -> A_POWER_OK
@@ -129,7 +129,7 @@ struct Gpio __code PWR_SW_N =       GPIO(E, 4);		// in, power switch state ?
 // struct Gpio __code SB_KBCRST_N =    GPIO(E, 6);
 struct Gpio __code SCI_N =          GPIO(D, 3);		//
 struct Gpio __code SLP_SUS_N =      GPIO(C, 3);		// PM_SLP_SUS#
-struct Gpio __code SMI_N =          GPIO(D, 4);		//
+//struct Gpio __code SMI_N =          GPIO(D, 3);		// NA
 //struct Gpio __code SUSB_N_PCH =     GPIO(H, 6);
 //struct Gpio __code SUSC_N_PCH =     GPIO(H, 1);
 //struct Gpio __code SUSWARN_N =      GPIO(D, 7);
@@ -170,7 +170,7 @@ void gpio_init() {
     GPCRA6 = GPIO_IN;		// V1.05A_PWRGD
 
     // GPIO port B
-    GPDRB = (1 << 6);		// enable capslock LED for feedback
+    GPDRB = (1 << 6);		//
 
     GPCRB0 = GPIO_IN;		// PM_SLP_S0#
     GPCRB1 = GPIO_OUT;		// capslock LED
@@ -182,7 +182,7 @@ void gpio_init() {
     GPCRB7 = GPIO_OUT;		// PM_RSMRST#
 
     // GPIO port C
-    GPDRC = 0x20;
+    GPDRC = 0x20;		// enable white power state LED
 
     GPCRC0 = GPIO_OUT;		// POWER_TP_ON, touchpad power on
     GPCRC1 = GPIO_ALT;		// I2C_CLK1, NA
@@ -206,7 +206,7 @@ void gpio_init() {
     GPCRD7 = GPIO_ALT;		// fan 1 tacho input
 
     // GPIO port E
-    GPDRE = 0x80 | 0x01 /*(1 << 7)*/;		// disable BAT_LOW
+    GPDRE = (1 << 0) | 0x80 /*(1U << 7)*/;		// disable BAT_LOW
 
     GPCRE0 = GPIO_OUT;		// LCD LED backlight enable
     GPCRE1 = GPIO_OUT;		// system power off, SMC_SHUTDOWN#
@@ -218,7 +218,7 @@ void gpio_init() {
     GPCRE7 = GPIO_OUT;		// PM_BATLOW#
     
     // GPIO port F
-    GPDRF = (0x20); // ???
+    GPDRF = (1 << 5);		// ???
     GPCRF0 = GPIO_OUT;		// audio codec SPDIF0/GPIO2 -> toggle for headphone mic input
     GPCRF1 = GPIO_OUT;		// +V0.95A_EN
     GPCRF2 = GPIO_OUT;		// ROP_VCCST_PWRGD
@@ -250,7 +250,7 @@ void gpio_init() {
     GPCRH7 = GPIO_IN;		// NA
     
     // GPIO port I
-    GPDRI = 0x80; // ???
+    GPDRI = (1U << 7);
 
     GPCRI0 = GPIO_IN;		// Chager_IOUT, BQ24715 IOUT
     GPCRI1 = GPIO_IN;		// +VBAT detect
