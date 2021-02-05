@@ -4,6 +4,7 @@
 #include <board/board.h>
 #include <board/gpio.h>
 #include <ec/pwm.h>
+#include <ec/adc.h>
 
 extern uint8_t main_cycle;
 
@@ -26,13 +27,17 @@ void board_init(void) {
     gpio_set(&SMI_N, true);
     gpio_set(&SWI_N, true);
 #endif
+    adc_init();
+    VCH0CTL |= (1 << 0);	// VCH0 = ADC input 1 on GPI1
+    //adc_enable(true); // we need ADC channel 1 to read bat voltage
+
     // I2C3 enable
     GCR2 |= (1 << 5); // SMB3E
 
     // PWMs
     // Turn on CPU fan a bit (further temperature control in peci_event)
-    DCR0 = 0x70;
-    DCR1 = 0x70;
+    DCR0 = 0x50;
+    DCR1 = 0x50;
 
     // turn off notification LED RGB
     DCR2 = 0xe0; // B
