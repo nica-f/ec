@@ -49,4 +49,7 @@ volatile uint8_t __xdata __at(0x194E) VCMP2DATL;
 volatile uint8_t __xdata __at(0x194F) VCMPOTR;
 volatile uint8_t __xdata __at(0x1952) VCMPLR;
 
+void adc_enable(bool enable);
+void adc_init(void);
+
 #endif // _EC_ADC_H
