@@ -152,7 +152,8 @@ struct Gpio __code PM_SLP_S0 =    GPIO(B, 0);
 struct Gpio __code PM_SLP_S3 =    GPIO(I, 4);
 struct Gpio __code PM_SLP_S4 =    GPIO(I, 3);
 
-struct Gpio __code POWER_TP_ON =    GPIO(C, 0);
+struct Gpio __code POWER_TP_ON =    GPIO(C, 0);			// power supply for touchpad
+struct Gpio __code POWER_ETH_ON =   GPIO(C, 6);			// power supply for Gbit ethernet controller
 
 void gpio_init() {
     GCR = 0x04;			// Enable LPC reset on GPD2
@@ -182,7 +183,7 @@ void gpio_init() {
     GPCRB7 = GPIO_OUT;		// PM_RSMRST#
 
     // GPIO port C
-    GPDRC = 0x20;		// enable white power state LED
+    GPDRC = (1 << 6);		// enable power supply for ethernet by default
 
     GPCRC0 = GPIO_OUT;		// POWER_TP_ON, touchpad power on
     GPCRC1 = GPIO_ALT;		// I2C_CLK1, NA
