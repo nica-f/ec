@@ -77,8 +77,8 @@ GPH5	GPIO	IN	TYPE_EC_IRQ
 GPH6	GPIO	IN	MAIN_LID			LCD lid open/close switch
 
 GPI0	GPIO	IN	Chager_IOUT			BQ24715 IOUT
-GPI1	GPIO	IN	BAT_VDEK			+VBAT detect
-GPI2	GPIO	IN	BAT-DEK#			battery pack detect?
+GPI1	GPIO	IN	BAT_VDEK			+VBAT voltage
+GPI2	GPIO	IN	BAT-DEK#			battery pack detect
 GPI3	GPIO	IN	PM_SLP_S4#
 GPI4	GPIO	IN	PM_SLP_S3#
 GPI5	GPIO	IN	ADP_IN#				DC adapter (charger) present
@@ -151,9 +151,11 @@ struct Gpio __code ROP_VCCST_PWRGD =    GPIO(F, 2);		// ROP_VCCST_PWRGD
 struct Gpio __code PM_SLP_S0 =    GPIO(B, 0);
 struct Gpio __code PM_SLP_S3 =    GPIO(I, 4);
 struct Gpio __code PM_SLP_S4 =    GPIO(I, 3);
+struct Gpio __code BAT_DETECT =   GPIO(I, 2);
 
 struct Gpio __code POWER_TP_ON =    GPIO(C, 0);			// power supply for touchpad
 struct Gpio __code POWER_ETH_ON =   GPIO(C, 6);			// power supply for Gbit ethernet controller
+
 
 void gpio_init() {
     GCR = 0x04;			// Enable LPC reset on GPD2
@@ -254,7 +256,7 @@ void gpio_init() {
     GPDRI = (1U << 7);
 
     GPCRI0 = GPIO_IN;		// Chager_IOUT, BQ24715 IOUT
-    GPCRI1 = GPIO_IN;		// +VBAT detect
+    GPCRI1 = GPIO_ALT;		// +VBAT analog input
     GPCRI2 = GPIO_IN;		// battery pack detect
     GPCRI3 = GPIO_IN;		// PM_SLP_S4#
     GPCRI4 = GPIO_IN;		// PM_SLP_S3#
