@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
+#include <arch/delay.h>
 #include <board/battery.h>
 #include <board/smbus.h>
+#include <board/gpio.h>
 #include <common/debug.h>
+#include <ec/adc.h>
 
 // Default values to disable battery charging thresholds
 #define BATTERY_START_DEFAULT   0
@@ -85,6 +88,7 @@ uint16_t battery_design_capacity = 0;
 uint16_t battery_design_voltage = 0;
 
 void battery_event(void) {
+#if 0
     int res = 0;
 
     #define command(N, V) { \
@@ -105,7 +109,17 @@ void battery_event(void) {
     command(battery_design_voltage, 0x19);
 
     #undef command
+#endif
+    int to=0;
 
+    VCH0CTL |= (1L << 7);
+    while (to++ < 100 && !(VCH0CTL & (1L << 7)))
+        delay_us(100);
+
+    if (!(VCH0CTL & (1L << 7)))
+        DEBUG("BAT !adc\n");
+    battery_voltage = (VCH0DATM << 7) | VCH0DATL;
+    DEBUG("BAT detect %s\n", gpio_get(&BAT_DETECT) ? "not present" : "present");
     DEBUG("BAT %d mV %d mA\n", battery_voltage, battery_current);
 
     battery_charger_event();
