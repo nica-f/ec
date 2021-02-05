@@ -26,7 +26,10 @@ void board_init(void) {
     gpio_set(&SMI_N, true);
     gpio_set(&SWI_N, true);
 #endif
+    // I2C3 enable
+    GCR2 |= (1 << 5); // SMB3E
 
+    // PWMs
     // Turn on CPU fan a bit (further temperature control in peci_event)
     DCR0 = 0x70;
     DCR1 = 0x70;
