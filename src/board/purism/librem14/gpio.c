@@ -209,7 +209,7 @@ void gpio_init() {
     GPCRD7 = GPIO_ALT;		// fan 1 tacho input
 
     // GPIO port E
-    GPDRE = (1 << 0) | 0x80 /*(1U << 7)*/;		// disable BAT_LOW
+    GPDRE = (1 << 0) | (1 << 1) | 0x80 /*(1U << 7)*/;		// disable BAT_LOW
 
     GPCRE0 = GPIO_OUT;		// LCD LED backlight enable
     GPCRE1 = GPIO_OUT;		// system power off, SMC_SHUTDOWN#
