@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// TI BQ24780S Smart Charger
+// TI BQ24715 Smart Charger
 // https://www.ti.com/lit/ds/symlink/bq24780s.pdf
 
 #include <board/battery.h>
@@ -14,8 +14,10 @@
 #define SBC_WDTMR_ADJ_175S  ((uint16_t)(0b11 << 13))
 // Switching Frequency
 #define SBC_PWM_FREQ_800KHZ ((uint16_t)(0b01 << 8))
-// IDCHG Amplifier Gain
-#define SBC_IDCHC_GAIN      ((uint16_t)(1 << 3))
+// AudioFrequencyLimit
+#define SBC_AUDIO_FREQ_LIM  ((uint16_t)(1 << 10))
+// ChargeInhibit
+#define SBC_CHARGE_INHIBIT  ((uint16_t)(1 << 0))
 
 // XXX: Assumption: ac_last is initialized high.
 static bool charger_enabled = false;
@@ -25,14 +27,17 @@ int battery_charger_disable(void) {
 
     if (!charger_enabled) return 0;
 
+    DEBUG("CHG disable\n");
+
     // Set charge option 0 with 175s watchdog
     res = smbus_write(
         CHARGER_ADDRESS,
         0x12,
-        SBC_EN_LWPWR |
+        /* SBC_EN_LWPWR |*/
         SBC_WDTMR_ADJ_175S |
         SBC_PWM_FREQ_800KHZ |
-        SBC_IDCHC_GAIN
+        SBC_AUDIO_FREQ_LIM |
+        SBC_CHARGE_INHIBIT
     );
 
     // Disable charge current
@@ -57,6 +62,8 @@ int battery_charger_enable(void) {
 
     if (charger_enabled) return 0;
 
+    DEBUG("CHG enable\n");
+
     res = battery_charger_disable();
     if (res < 0) return res;
 
@@ -78,7 +85,8 @@ int battery_charger_enable(void) {
         0x12,
         SBC_EN_LWPWR |
         SBC_PWM_FREQ_800KHZ |
-        SBC_IDCHC_GAIN
+        SBC_AUDIO_FREQ_LIM /*|
+        SBC_CHARGE_INHIBIT*/ // XXX for testing disabled
     );
 
     DEBUG("Charger enabled\n");
@@ -88,6 +96,7 @@ int battery_charger_enable(void) {
 
 void battery_charger_event(void) {
     //TODO: watchdog
+    DEBUG("CHG event\n");
 }
 
 void battery_debug(void) {
@@ -104,25 +113,14 @@ void battery_debug(void) {
         } \
     }
 
-    DEBUG("Battery:\n");
-    command(Temperature, BATTERY_ADDRESS, 0x08);
-    command(Voltage, BATTERY_ADDRESS, 0x09);
-    command(Current, BATTERY_ADDRESS, 0x0A);
-    command(Charge, BATTERY_ADDRESS, 0x0D);
-    command(Status, BATTERY_ADDRESS, 0x16);
-
-    DEBUG("Charger (bq24780s):\n");
+    DEBUG("Charger (bq24715):\n");
     command(ChargeOption0, CHARGER_ADDRESS, 0x12);
-    command(ChargeOption1, CHARGER_ADDRESS, 0x3B);
-    command(ChargeOption2, CHARGER_ADDRESS, 0x38);
-    command(ChargeOption3, CHARGER_ADDRESS, 0x37);
     command(ChargeCurrent, CHARGER_ADDRESS, 0x14);
     command(ChargeVoltage, CHARGER_ADDRESS, 0x15);
-    command(DishargeCurrent, CHARGER_ADDRESS, 0x39);
+    command(MinSysVoltage, CHARGER_ADDRESS, 0x3E);
     command(InputCurrent, CHARGER_ADDRESS, 0x3F);
-    command(ProchotOption0, CHARGER_ADDRESS, 0x3C);
-    command(ProchotOption1, CHARGER_ADDRESS, 0x3D);
-    command(ProchotStatus, CHARGER_ADDRESS, 0x3A);
+    command(ManufacturerID, CHARGER_ADDRESS, 0xFE);
+    command(DeviceID, CHARGER_ADDRESS, 0xFF);
 
     #undef command
 }
