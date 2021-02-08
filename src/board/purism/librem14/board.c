@@ -28,8 +28,8 @@ void board_init(void) {
     gpio_set(&SWI_N, true);
 #endif
     adc_init();
-    VCH0CTL |= (1 << 0);	// VCH0 = ADC input 1 on GPI1
-    //adc_enable(true); // we need ADC channel 1 to read bat voltage
+    VCH0CTL = (1 << 0);	// VCH0 = ADC input 1 on GPI1, clear all else
+    adc_enable(true); // we need ADC channel 1 to read bat voltage
 
     // I2C3 enable
     GCR2 |= (1 << 5); // SMB3E
