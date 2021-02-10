@@ -32,6 +32,9 @@ uint16_t board_get_battery_charge(void)
 {
 uint16_t tvol;
 uint16_t bchgst;
+static unsigned char ravg=0; // rolling average
+static unsigned char ravg2=0;
+static unsigned char ravg3=0;
 
     if (battery_design_voltage == 0)
         return 0;
@@ -39,7 +42,16 @@ uint16_t bchgst;
     tvol -= battery_min_voltage; // lower threshold, = 0%
     bchgst = ((30000 / (battery_design_voltage-battery_min_voltage)) * tvol) / 300;
 
-    return bchgst; // in % from 0 to 100 - hopefully
+    if (bchgst > 100)
+        bchgst = 100;
+
+    ravg = (ravg + ravg2 + ravg3 + bchgst) / 4;
+    ravg3 = ravg2;
+    ravg2 = ravg;
+
+    battery_remaining_capacity = (battery_design_capacity / 100) * ravg;
+
+    return ravg; // in % from 0 to 100 - hopefully
 }
 
 //
@@ -112,7 +124,7 @@ uint16_t max_discharge_current;
     if (res < 0)
         design_capacity=0;
     else {
-        battery_design_capacity=design_capacity;
+        battery_design_capacity = design_capacity;
         battery_full_capacity = design_capacity; // we can not determine anything else
     }
     res = i2c_get(&I2C_0, BAT_EEPROM_ADR, 0x08, &design_voltage, 2);
@@ -141,6 +153,8 @@ uint16_t max_discharge_current;
 
     battery_temp = 20; // no thermistor, assume 20C ?
     battery_min_voltage = 9600;
+
+    battery_current = 0; // we have no means to tell the current/rate
 
     return true;
 }
