@@ -3,6 +3,7 @@
 #include <board/battery.h>
 #include <board/board.h>
 #include <board/gpio.h>
+#include <board/power.h>
 #include <ec/pwm.h>
 #include <ec/adc.h>
 #include <common/debug.h>
@@ -63,8 +64,15 @@ void board_on_ac(bool ac) {
     // as long as we are on AC we keep the EC powered
     if (ac)
         gpio_set(&SMC_SHUTDOWN_N, false);
-    else
-        gpio_set(&SMC_SHUTDOWN_N, true);
+    else {
+        // if we are _running_ from battery power, keep running
+        if (power_state == POWER_STATE_DS3 ||
+            power_state == POWER_STATE_S3 ||
+            power_state == POWER_STATE_S0) {
+                gpio_set(&SMC_SHUTDOWN_N, true);
+        } else
+                gpio_set(&SMC_SHUTDOWN_N, false);
+    }
 }
 
 void board_event(void) {
