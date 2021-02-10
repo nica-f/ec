@@ -4,6 +4,7 @@
 #include <board/battery.h>
 #include <board/smbus.h>
 #include <board/gpio.h>
+#include <board/board.h>
 #include <common/debug.h>
 #include <ec/adc.h>
 
@@ -72,9 +73,10 @@ int battery_charger_configure(void) {
         should_charge = true;
     }
 
-    if (should_charge)
+    if (battery_present && should_charge)
         return battery_charger_enable();
-    return battery_charger_disable();
+    else
+        return battery_charger_disable();
 }
 
 uint16_t battery_temp = 0;
@@ -86,6 +88,12 @@ uint16_t battery_full_capacity = 0;
 uint16_t battery_status = 0;
 uint16_t battery_design_capacity = 0;
 uint16_t battery_design_voltage = 0;
+
+uint16_t battery_charge_voltage = 0;
+uint16_t battery_charge_current = 0;
+uint16_t battery_min_voltage = 0;
+
+bool battery_present=false;
 
 void battery_event(void) {
 #if 0
@@ -110,35 +118,13 @@ void battery_event(void) {
 
     #undef command
 #endif
-    int to=0;
-    uint16_t adcval;
-    uint32_t tvol;
-
-    battery_temp=20;
-    battery_current=0;
-    battery_charge=50;
-    battery_remaining_capacity=50;
-    battery_full_capacity=100;
-    battery_status=0;
-    battery_design_capacity=100;
-    battery_design_voltage=11400;
-
-    // we may have to wait for ADC to finish
-    while (to++ < 100 && !(VCH0CTL & (1L << 7)))
-        delay_us(100);
-
-    if (!(VCH0CTL & (1L << 7)))
-        DEBUG("BAT !adc sts=0x%02x ctl=0x%02x\n", ADCSTS, VCH0CTL);
-
-    adcval = (((uint16_t)VCH0DATM & 0x03) << 8) | VCH0DATL;
-    // max bat voltage at max ADC value = 15.4V
-    tvol = ((14000000 / 0x3ff) * adcval) / 1000;
-    battery_voltage = (uint16_t)tvol;
-
-    VCH0CTL |= (1L << 7);
-
-    DEBUG("BAT detect %s\n", gpio_get(&BAT_DETECT) ? "not present" : "present");
-    DEBUG("BAT %d mV %d mA 0x%04x)\n", battery_voltage, battery_current, adcval);
+    if (battery_present) {
+        battery_voltage = board_battery_get_voltage();
+        DEBUG("BAT detect %s\n", board_battery_detect() ? "present" : "not present");
+        DEBUG("BAT %d mV %d mA %d %%\n", battery_voltage, battery_current, battery_charge);
+    } else {
+        DEBUG("BAT not present");
+    }
 
     battery_charger_event();
 }
