@@ -156,6 +156,8 @@ struct Gpio __code BAT_DETECT =   GPIO(I, 2);
 struct Gpio __code POWER_TP_ON =    GPIO(C, 0);			// power supply for touchpad
 struct Gpio __code POWER_ETH_ON =   GPIO(C, 6);			// power supply for Gbit ethernet controller
 
+struct Gpio __code SMC_SHUTDOWN_N =   GPIO(E,1);			// power supply latch
+
 
 void gpio_init() {
     GCR = 0x04;			// Enable LPC reset on GPD2
@@ -209,7 +211,7 @@ void gpio_init() {
     GPCRD7 = GPIO_ALT;		// fan 1 tacho input
 
     // GPIO port E
-    GPDRE = (1 << 0) | (1 << 1) | 0x80 /*(1U << 7)*/;		// disable BAT_LOW
+    GPDRE = (1 << 0) /*| (1 << 1)*/ | 0x80 /*(1U << 7)*/;		// disable BAT_LOW
 
     GPCRE0 = GPIO_OUT;		// LCD LED backlight enable
     GPCRE1 = GPIO_OUT;		// system power off, SMC_SHUTDOWN#

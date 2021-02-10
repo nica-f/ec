@@ -5,6 +5,7 @@
 #include <board/gpio.h>
 #include <ec/pwm.h>
 #include <ec/adc.h>
+#include <common/debug.h>
 
 extern uint8_t main_cycle;
 
@@ -27,6 +28,10 @@ void board_init(void) {
     gpio_set(&SMI_N, true);
     gpio_set(&SWI_N, true);
 #endif
+    // in case we got powered up running from battery only
+    // we need to make sure power keeps up
+    gpio_set(&SMC_SHUTDOWN_N, true);
+
     adc_init();
     VCH0CTL = (1 << 0);	// VCH0 = ADC input 1 on GPI1, clear all else
     adc_enable(true); // we need ADC channel 1 to read bat voltage
@@ -49,12 +54,18 @@ void board_init(void) {
 
     // enable keyboard backlight
     DCR6 = 0xff;
+
+    board_battery_init();
 }
 
 void board_on_ac(bool ac) {
-    /* Fix unused variable */
-    ac = ac;
+    DEBUG("board ac %s\n", ac ? "t" : "f");
+    if (ac)
+        gpio_set(&SMC_SHUTDOWN_N, false);
+    else
+        gpio_set(&SMC_SHUTDOWN_N, true);
 }
 
 void board_event(void) {
+    // called every main loop cycle, careful
 }

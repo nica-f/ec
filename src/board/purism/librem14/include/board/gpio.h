@@ -66,6 +66,9 @@ extern struct Gpio __code BAT_DETECT;
 extern struct Gpio __code POWER_ETH_ON;
 
 extern struct Gpio __code POWER_TP_ON;
+
+extern struct Gpio __code SMC_SHUTDOWN_N;
+
 #define HAVE_XLP_OUT 0
 
 #endif // _BOARD_GPIO_H

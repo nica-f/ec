@@ -340,6 +340,16 @@ void power_off_s5(void) {
     tPCH14;
 #endif // DEEP_SX
 
+#if 0
+    // if charger is not plugged in then off means off,
+    // else keep EC powered for eventual battery charge
+    // ToDo XXX - this needs to go somewhere else
+    if (gpio_get(&ACIN_N)) {
+        GPIO_SET_DEBUG(SMC_SHUTDOWN_N, false);
+    } else {
+        GPIO_SET_DEBUG(SMC_SHUTDOWN_N, true);
+    }
+#endif
     update_power_state();
 }
 
@@ -380,6 +390,7 @@ void power_event(void) {
         } else {
             DEBUG("plugged in\n");
             battery_charger_configure();
+            // gpio_set(&SMC_SHUTDOWN_N, true); // if AC present keep power on, e.g. for charging
         }
         battery_debug();
 
