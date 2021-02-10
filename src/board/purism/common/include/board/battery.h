@@ -25,6 +25,10 @@ extern uint16_t battery_full_capacity;
 extern uint16_t battery_status;
 extern uint16_t battery_design_capacity;
 extern uint16_t battery_design_voltage;
+extern uint16_t battery_charge_voltage;
+extern uint16_t battery_charge_current;
+extern uint16_t battery_min_voltage;
+extern bool battery_present;
 
 uint8_t battery_get_start_threshold(void);
 bool battery_set_start_threshold(uint8_t value);
