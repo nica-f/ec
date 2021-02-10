@@ -10,9 +10,13 @@
 #include <common/debug.h>
 #include <ec/pwm.h>
 
-#ifndef HAVE_LED_AIRPLANE_N
-#define HAVE_LED_AIRPLANE_N 1
-#endif // HAVE_LED_AIRPLANE_N
+//#ifndef HAVE_LED_AIRPLANE_N
+//#define HAVE_LED_AIRPLANE_N 1
+//#endif // HAVE_LED_AIRPLANE_N
+
+#ifndef HAVE_LED_AIRPLANE
+#define HAVE_LED_AIRPLANE 1
+#endif // HAVE_LED_AIRPLANE
 
 extern uint8_t sci_extra;
 
@@ -63,6 +67,10 @@ void acpi_reset(void) {
     // Clear airplane mode LED
     gpio_set(&LED_AIRPLANE_N, true);
 #endif
+#if HAVE_LED_AIRPLANE
+    // Clear airplane mode LED
+    gpio_set(&LED_AIRPLANE, false);
+#endif
 }
 
 uint8_t acpi_read(uint8_t addr) {
@@ -84,7 +92,12 @@ uint8_t acpi_read(uint8_t addr) {
     switch (addr) {
         // Lid state and other flags
         case 0x03:
-            if (gpio_get(&LID_SW_N)) {
+#ifdef HAVE_LID_SW_N
+            if (!gpio_get(&LID_SW_N)) {
+#endif
+#ifdef HAVE_LID_SW
+            if (gpio_get(&LID_SW)) {
+#endif
                 // Lid is open
                 data |= 1 << 0;
             }
@@ -109,7 +122,8 @@ uint8_t acpi_read(uint8_t addr) {
 
         ACPI_16(0x16, battery_design_capacity);
         ACPI_16(0x1A, battery_full_capacity);
-        ACPI_16(0x22, battery_design_voltage);
+        // ACPI_16(0x22, battery_design_voltage);
+        ACPI_16(0x22, battery_min_voltage);
 
         case 0x26:
             // If AC adapter connected
@@ -156,6 +170,14 @@ uint8_t acpi_read(uint8_t addr) {
             }
             break;
 #endif // HAVE_LED_AIRPLANE_N
+#if HAVE_LED_AIRPLANE
+        // Airplane mode LED
+        case 0xD9:
+            if (gpio_get(&LED_AIRPLANE)) {
+                data |= (1 << 6);
+            }
+            break;
+#endif // HAVE_LED_AIRPLANE_N
 
         // Set size of flash (from old firmware)
         ACPI_8 (0xE5, 0x80);
@@ -197,6 +219,12 @@ void acpi_write(uint8_t addr, uint8_t data) {
         // Airplane mode LED
         case 0xD9:
             gpio_set(&LED_AIRPLANE_N, !(bool)(data & (1 << 6)));
+            break;
+#endif
+#if HAVE_LED_AIRPLANE
+        // Airplane mode LED
+        case 0xD9:
+            gpio_set(&LED_AIRPLANE, (bool)(data & (1 << 6)));
             break;
 #endif
 
