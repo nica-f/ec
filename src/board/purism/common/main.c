@@ -121,11 +121,6 @@ void main(void) {
                 // Updates fan status and temps
                 peci_event();
 
-#if HAVE_DGPU
-                // Updates discrete GPU fan status and temps
-                dgpu_event();
-#endif
-
                 // Updates battery status
                 battery_event();
             }
@@ -136,10 +131,13 @@ void main(void) {
 
         // Checks for keyboard/mouse packets from host
         kbc_event(&KBC);
+
         // Handles ACPI communication
         pmc_event(&PMC_1);
+
         // AP/EC communication over SMFI
         smfi_event();
+
         // Idle until next timer interrupt
         //Disabled until interrupts used: PCON |= 1;
     }
