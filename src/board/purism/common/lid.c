@@ -15,7 +15,12 @@ void lid_event(void) {
     static bool send_sci = true;
 
     // Check if the lid switch has changed
-    bool new = !gpio_get(&LID_SW_N);
+#ifdef HAVE_LID_SW_N
+    bool new = gpio_get(&LID_SW_N);
+#endif
+#ifdef HAVE_LID_SW
+    bool new = !gpio_get(&LID_SW);
+#endif
     if (new != lid_state) {
         DEBUG("Lid ");
         if (new) {
