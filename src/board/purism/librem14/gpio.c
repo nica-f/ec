@@ -115,11 +115,11 @@ struct Gpio __code DD_ON =          GPIO(H, 3);		// debug VDD on/off, NA use dum
 struct Gpio __code EC_RSMRST_N =    GPIO(B, 7);		//
 // struct Gpio __code LAN_WAKEUP_N =   GPIO(B, 2);
 struct Gpio __code LED_ACIN =       GPIO(C, 5);		// pwr white LED, temporary
-struct Gpio __code LED_AIRPLANE_N = GPIO(F, 3);		// WiFi HKS LED
+struct Gpio __code LED_AIRPLANE =   GPIO(F, 3);		// WiFi HKS LED
 struct Gpio __code LED_BAT_CHG =    GPIO(J, 4);		// orange LED
 struct Gpio __code LED_BAT_FULL =   GPIO(J, 5);		// green LED
 struct Gpio __code LED_PWR =        GPIO(C, 5);		//
-struct Gpio __code LID_SW_N =       GPIO(H, 6);		//
+struct Gpio __code LID_SW =         GPIO(H, 6);		//
 struct Gpio __code PCH_DPWROK_EC =  GPIO(F, 5);		// DSW_PWROK -> DPW_PWROK -> A_POWER_OK
 struct Gpio __code PCH_PWROK_EC =   GPIO(G, 1);		//
 // struct Gpio __code PM_CLKRUN_N =    GPIO(H, 0);
@@ -267,7 +267,7 @@ void gpio_init() {
     GPCRI7 = GPIO_OUT;		// type-C USB port 5V power enable
     
     // GPIO port J
-    GPDRJ = /*(1 << 0) |*/ (1 << 2) | (1 << 5);		// camera on
+    GPDRJ = 0x00; /*(1 << 0) | (1 << 2) | (1 << 5)*/;		//
 
     GPCRJ0 = GPIO_OUT;		// PROCHOT#_EC, device overheat
     GPCRJ1 = GPIO_OUT;		// DIS_BAT

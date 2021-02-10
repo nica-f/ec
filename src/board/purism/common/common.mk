@@ -7,7 +7,7 @@
 # 3 - INFO
 # 4 - DEBUG
 # 5 - TRACE
-CFLAGS+=-DLEVEL=5
+CFLAGS+=-DLEVEL=4
 
 # Uncomment to enable debug logging over keyboard parallel port
 #CFLAGS+=-DPARALLEL_DEBUG

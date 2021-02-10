@@ -29,5 +29,7 @@ CFLAGS+=\
 	-DBATTERY_START_THRESHOLD=0 \
 	-DBATTERY_END_THRESHOLD=100
 
+CFLAGS+=-DHAVE_LID_SW
+
 # Add Purism common code
 include src/board/purism/common/common.mk

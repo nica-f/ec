@@ -77,6 +77,7 @@
     #define HAVE_XLP_OUT 1
 #endif
 
+
 extern uint8_t main_cycle;
 
 // VccRTC stable (55%) to RTCRST# high
@@ -292,6 +293,7 @@ void power_on_s5(void) {
     DEBUG("D\n");
 
     GPIO_SET_DEBUG(POWER_TP_ON, true);
+    GPIO_SET_DEBUG(CCD_EN, true);
 
     update_power_state();
     DEBUG("E\n");
@@ -300,7 +302,8 @@ void power_on_s5(void) {
 void power_off_s5(void) {
     DEBUG("%02X: power_off_s5\n", main_cycle);
 
-    GPIO_SET_DEBUG(POWER_TP_ON, false);
+    GPIO_SET_DEBUG(POWER_TP_ON, false);		// no need for TP in S5
+    GPIO_SET_DEBUG(CCD_EN, false);		// no need for camera in S5
 
 #if DEEP_SX
     // TODO
@@ -367,7 +370,12 @@ void power_cpu_reset(void) {
 
 static bool power_button_disabled(void) {
     // Disable power button if lid is closed and AC is disconnected
+#ifdef HAVE_LID_SW_N
     return !gpio_get(&LID_SW_N) && gpio_get(&ACIN_N);
+#endif
+#ifdef HAVE_LID_SW
+    return gpio_get(&LID_SW) && gpio_get(&ACIN_N);
+#endif
 }
 
 void power_event(void) {
