@@ -32,7 +32,7 @@ uint16_t board_get_battery_charge(void)
 {
 uint16_t tvol;
 uint16_t bchgst;
-static unsigned char ravg=0; // rolling average
+unsigned char ravg=0; // rolling average
 static unsigned char ravg2=0;
 static unsigned char ravg3=0;
 
@@ -45,9 +45,9 @@ static unsigned char ravg3=0;
     if (bchgst > 100)
         bchgst = 100;
 
-    ravg = (ravg + ravg2 + ravg3 + bchgst) / 4;
     ravg3 = ravg2;
-    ravg2 = ravg;
+    ravg2 = bchgst;
+    ravg = (ravg2 + ravg3 + bchgst) / 3;
 
     battery_remaining_capacity = (battery_design_capacity / 100) * ravg;
 
