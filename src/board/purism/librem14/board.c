@@ -31,7 +31,7 @@ void board_init(void) {
 #endif
     // in case we got powered up running from battery only
     // we need to make sure power keeps up
-    gpio_set(&SMC_SHUTDOWN_N, true);
+    // gpio_set(&SMC_SHUTDOWN_N, true);
 
     adc_init();
     VCH0CTL = (1 << 0);	// VCH0 = ADC input 1 on GPI1, clear all else
