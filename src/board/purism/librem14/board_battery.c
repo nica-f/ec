@@ -36,11 +36,20 @@ unsigned char ravg=0; // rolling average
 static unsigned char ravg2=0;
 static unsigned char ravg3=0;
 
+    // if no design voltage is defined we can not determine anything,
+    // bail out
     if (battery_design_voltage == 0)
         return 0;
+
     tvol=last_voltage_read;
     tvol -= battery_min_voltage; // lower threshold, = 0%
-    bchgst = ((30000 / (battery_design_voltage-battery_min_voltage)) * tvol) / 300;
+    if (gpio_get(&ACIN_N)) {
+        // unplugged
+        bchgst = ((30000 / (battery_design_voltage-battery_min_voltage)) * tvol) / 300;
+    } else {
+        // plugged
+        bchgst = ((30000 / (battery_charge_voltage-battery_min_voltage)) * tvol) / 300;
+    }
 
     if (bchgst > 100)
         bchgst = 100;

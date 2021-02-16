@@ -62,17 +62,19 @@ int battery_charger_enable(void) {
 
     if (charger_enabled) return 0;
 
-    DEBUG("CHG enable\n");
+    DEBUG("CHG enable @ %dmV %dmA\n", battery_charge_voltage, battery_charge_current);
 
     res = battery_charger_disable();
     if (res < 0) return res;
 
     // Set charge current in mA
-    res = smbus_write(CHARGER_ADDRESS, 0x14, CHARGER_CHARGE_CURRENT);
+    //res = smbus_write(CHARGER_ADDRESS, 0x14, CHARGER_CHARGE_CURRENT);
+    res = smbus_write(CHARGER_ADDRESS, 0x14, battery_charge_current);
     if (res < 0) return res;
 
     // Set charge voltage in mV
-    res = smbus_write(CHARGER_ADDRESS, 0x15, CHARGER_CHARGE_VOLTAGE);
+    // res = smbus_write(CHARGER_ADDRESS, 0x15, CHARGER_CHARGE_VOLTAGE);
+    res = smbus_write(CHARGER_ADDRESS, 0x15, battery_charge_voltage);
     if (res < 0) return res;
 
     // Set input current in mA
