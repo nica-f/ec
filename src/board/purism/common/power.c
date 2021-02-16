@@ -54,9 +54,9 @@
     #define HAVE_PCH_PWROK_EC 1
 #endif
 
-#ifndef HAVE_SLP_SUS_N
-    #define HAVE_SLP_SUS_N 1
-#endif
+//#ifndef HAVE_SLP_SUS_N
+//    #define HAVE_SLP_SUS_N 1
+//#endif
 
 #ifndef HAVE_XLP_OUT
     #define HAVE_XLP_OUT 1
@@ -123,16 +123,11 @@ enum PowerState calculate_power_state(void) {
     //TODO: Deep Sx states using SLP_SUS#
 
 #if 0
-    if (gpio_get(&SUSB_N_PCH)) {
-        // S3, S4, and S5 planes powered
-        return POWER_STATE_S0;
-    }
-
-    if (gpio_get(&SUSC_N_PCH)) {
-        // S4 and S5 planes powered
-        return POWER_STATE_S3;
-    }
+    DEBUG("%s %s %s\n", gpio_get(&PM_SLP_S3) ? "SLP_S3" : "!SLP_S3", 
+                        gpio_get(&PM_SLP_S4) ? "SLP_S3" : "!SLP_S4", 
+                        gpio_get(&EC_RSMRST_N) ? "EC_RSMRST" : "!EC_RSMRST");
 #endif
+
     if (gpio_get(&PM_SLP_S3)) {
         // S3, S4, and S5 planes powered
         return POWER_STATE_S0;
@@ -142,6 +137,7 @@ enum PowerState calculate_power_state(void) {
         // S4 and S5 planes powered
         return POWER_STATE_S3;
     }
+
     if (gpio_get(&EC_RSMRST_N)) {
         // S5 plane powered
         return POWER_STATE_S5;
@@ -398,7 +394,6 @@ void power_event(void) {
         } else {
             DEBUG("plugged in\n");
             battery_charger_configure();
-            // gpio_set(&SMC_SHUTDOWN_N, true); // if AC present keep power on, e.g. for charging
         }
         battery_debug();
 
