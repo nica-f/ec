@@ -7,7 +7,7 @@ KEYMAP?=default
 SRC+=$(BOARD_DIR)/keymap/$(KEYMAP).c
 
 # Set keyboard LED mechanism
-KBLED=white_pwm
+KBLED=white_gpio
 
 # Set charger I2C bus
 CFLAGS+=-DI2C_SMBUS=I2C_3
@@ -22,7 +22,7 @@ CFLAGS+=-DI2C_DEBUGBUS=I2C_0
 CFLAGS+=\
 	-DCHARGER_CHARGE_CURRENT=0x0200 \
 	-DCHARGER_CHARGE_VOLTAGE=0x3000 \
-	-DCHARGER_INPUT_CURRENT=0x0800
+	-DCHARGER_INPUT_CURRENT=0x1100
 
 # Set battery charging thresholds
 CFLAGS+=\
