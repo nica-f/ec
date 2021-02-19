@@ -61,13 +61,16 @@ extern struct Gpio __code V105A_PWRGD;
 extern struct Gpio __code ALL_SYS_PWRGD_VRON;
 extern struct Gpio __code ROP_VCCST_PWRGD;
 
+extern struct Gpio __code DDR3VR_PWRGD;
+
 extern struct Gpio __code PM_SLP_S0;
 extern struct Gpio __code PM_SLP_S3;
 extern struct Gpio __code PM_SLP_S4;
 extern struct Gpio __code BAT_DETECT;
-extern struct Gpio __code POWER_ETH_ON;
 
+extern struct Gpio __code POWER_ETH_ON;
 extern struct Gpio __code POWER_TP_ON;
+extern struct Gpio __code KBD_BACKLIGHT_EN;
 
 extern struct Gpio __code SMC_SHUTDOWN_N;
 

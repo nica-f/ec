@@ -126,7 +126,7 @@ struct Gpio __code PCH_PWROK_EC =   GPIO(G, 1);		//
 struct Gpio __code PM_PWROK =       GPIO(E, 5);		// SYS PWR OK ???
 struct Gpio __code PWR_BTN_N =      GPIO(H, 4);		// out, power button to sys
 struct Gpio __code PWR_SW_N =       GPIO(E, 4);		// in, power switch state ?
-// struct Gpio __code SB_KBCRST_N =    GPIO(E, 6);
+struct Gpio __code SB_KBCRST_N =    GPIO(B, 6);
 struct Gpio __code SCI_N =          GPIO(D, 3);		//
 //struct Gpio __code SLP_SUS_N =      GPIO(C, 3);		// PM_SLP_SUS#, NA
 //struct Gpio __code SMI_N =          GPIO(D, 3);		// NA
@@ -148,6 +148,10 @@ struct Gpio __code V105A_PWRGD =    GPIO(A, 7);
 struct Gpio __code ALL_SYS_PWRGD_VRON =    GPIO(B, 5);		// ALL_SYS_PWRGD_VRON
 struct Gpio __code ROP_VCCST_PWRGD =    GPIO(F, 2);		// ROP_VCCST_PWRGD
 
+struct Gpio __code SMC_SHUTDOWN_N =   GPIO(E,1);			// power supply latch
+
+struct Gpio __code DDR3VR_PWRGD = GPIO(D, 1);
+
 struct Gpio __code PM_SLP_S0 =    GPIO(B, 0);
 struct Gpio __code PM_SLP_S3 =    GPIO(I, 4);
 struct Gpio __code PM_SLP_S4 =    GPIO(I, 3);
@@ -155,8 +159,7 @@ struct Gpio __code BAT_DETECT =   GPIO(I, 2);
 
 struct Gpio __code POWER_TP_ON =    GPIO(C, 0);			// power supply for touchpad
 struct Gpio __code POWER_ETH_ON =   GPIO(C, 6);			// power supply for Gbit ethernet controller
-
-struct Gpio __code SMC_SHUTDOWN_N =   GPIO(E,1);			// power supply latch
+struct Gpio __code KBD_BACKLIGHT_EN = GPIO(A, 6);
 
 
 void gpio_init() {
@@ -164,6 +167,7 @@ void gpio_init() {
 
     // GPIO port A
     GPDRA = 0x00;		// init data with all 0 = off
+    //GPDRA = 0x14;
 
     GPCRA0 = GPIO_ALT;		// fan 0 set speed
     GPCRA1 = GPIO_ALT;		// fan 1 set speed
@@ -171,15 +175,16 @@ void gpio_init() {
     GPCRA3 = GPIO_ALT;		// notification LED green
     GPCRA4 = GPIO_ALT;		// notification LED red
     GPCRA5 = GPIO_ALT;		// power/charging LED brightness
-    GPCRA6 = GPIO_ALT;		// keyboard backlight
-    GPCRA6 = GPIO_IN;		// V1.05A_PWRGD
+    GPCRA6 = GPIO_OUT;		// keyboard backlight
+    GPCRA7 = GPIO_IN;		// V1.05A_PWRGD
 
     // GPIO port B
-    GPDRB = (1 << 6);		//
+    GPDRB = (1 << 6) | (1 << 2);		//
+    //GPDRB = (0x44);		//
 
     GPCRB0 = GPIO_IN;		// PM_SLP_S0#
     GPCRB1 = GPIO_OUT;		// capslock LED
-    GPCRB2 = GPIO_IN;		// NA
+    GPCRB2 = GPIO_OUT;		// NA (SYS_RST)
     GPCRB3 = GPIO_ALT;		// SMB_CLK_BT - battery gas gauge
     GPCRB4 = GPIO_ALT;		// SMB_DATA_BT - battery gas gauge
     GPCRB5 = GPIO_OUT;		// ALL_SYS_PWRGD_VRON
@@ -188,6 +193,7 @@ void gpio_init() {
 
     // GPIO port C
     GPDRC = (1 << 6);		// enable power supply for ethernet by default
+    //GPDRC = (0x28);		// enable power supply for ethernet by default
 
     GPCRC0 = GPIO_OUT;		// POWER_TP_ON, touchpad power on
     GPCRC1 = GPIO_ALT;		// I2C_CLK1, NA
@@ -200,6 +206,7 @@ void gpio_init() {
 
     // GPIO port D
     GPDRD = (1 << 4) | (1 << 3);
+    //GPDRD = (0x68);
 
     GPCRD0 = GPIO_OUT;		// WiFi/BT M.2 power supply on/off
     GPCRD1 = GPIO_IN;		// DDR3VR_PWRGD
@@ -212,6 +219,7 @@ void gpio_init() {
 
     // GPIO port E
     GPDRE = (1 << 0) | (1 << 1) | (1 << 3) | 0x80 /*(1U << 7)*/;		// disable BAT_LOW
+    //GPDRE = (0x80);
 
     GPCRE0 = GPIO_OUT;		// LCD LED backlight enable
     GPCRE1 = GPIO_OUT;		// system power off, SMC_SHUTDOWN#
@@ -224,6 +232,8 @@ void gpio_init() {
     
     // GPIO port F
     GPDRF = (1 << 5);		// ???
+    //GPDRF = (0x20);		// ???
+
     GPCRF0 = GPIO_OUT;		// audio codec SPDIF0/GPIO2 -> toggle for headphone mic input
     GPCRF1 = GPIO_OUT;		// +V0.95A_EN
     GPCRF2 = GPIO_OUT;		// ROP_VCCST_PWRGD
@@ -243,7 +253,8 @@ void gpio_init() {
     GPCRG6 = GPIO_OUT;		// V1.05A_EN
     
     // GPIO port H
-    GPDRH = 0x00;
+    GPDRH = (1 << 4);
+    //GPDRH = (0x70);
 
     GPCRH0 = GPIO_ALT;		// LPC_CLKRUN#
     GPCRH1 = GPIO_ALT;		// I2C CLK, BQ24715 battery charge controller
@@ -256,8 +267,9 @@ void gpio_init() {
     
     // GPIO port I
     GPDRI = (1U << 7);
+    //GPDRI = (0x40);
 
-    GPCRI0 = GPIO_IN;		// Chager_IOUT, BQ24715 IOUT
+    GPCRI0 = GPIO_ALT;		// Chager_IOUT, BQ24715 IOUT, analog charge/discharge current
     GPCRI1 = GPIO_ALT;		// +VBAT analog input
     GPCRI2 = GPIO_IN;		// battery pack detect
     GPCRI3 = GPIO_IN;		// PM_SLP_S4#
@@ -268,6 +280,7 @@ void gpio_init() {
     
     // GPIO port J
     GPDRJ = 0x00; /*(1 << 0) | (1 << 2) | (1 << 5)*/;		//
+    //GPDRJ = 0x04;
 
     GPCRJ0 = GPIO_OUT;		// PROCHOT#_EC, device overheat
     GPCRJ1 = GPIO_OUT;		// DIS_BAT
