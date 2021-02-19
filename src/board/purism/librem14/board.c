@@ -12,10 +12,6 @@ extern uint8_t main_cycle;
 
 void board_init(void) {
 #if 0
-    // Allow CPU to boot
-//    gpio_set(&SB_KBCRST_N, true);
-    // Allow backlight to be turned on
-    gpio_set(&BKL_EN, true);
     // Enable camera
     gpio_set(&CCD_EN, true);
     // Enable wireless
@@ -29,12 +25,24 @@ void board_init(void) {
     gpio_set(&SMI_N, true);
     gpio_set(&SWI_N, true);
 #endif
+    // Allow CPU to boot
+    gpio_set(&SB_KBCRST_N, true);
+
+    // Allow backlight to be turned on
+    gpio_set(&BKL_EN, true);
+
+    // Assert SMI#, SCI#, and SWI#
+    gpio_set(&SCI_N, true);
+    //gpio_set(&SMI_N, true);
+    gpio_set(&SWI_N, true);
+
     // in case we got powered up running from battery only
     // we need to make sure power keeps up
     // gpio_set(&SMC_SHUTDOWN_N, true);
 
     adc_init();
-    VCH0CTL = (1 << 0);	// VCH0 = ADC input 1 on GPI1, clear all else
+    VCH0CTL = (1 << 0);	// VCH0 = ADC input 1 on GPI1, clear all else, bat voltage
+    VCH1CTL = 0x00;	// VCH1 = ADC input 0 on GPI0, clear all else, charge/discharge currrent
     adc_enable(true); // we need ADC channel 1 to read bat voltage
 
     // I2C3 enable
@@ -57,6 +65,7 @@ void board_init(void) {
     DCR6 = 0xff;
 
     board_battery_init();
+    battery_reset();
 }
 
 void board_on_ac(bool ac) {
@@ -77,4 +86,20 @@ void board_on_ac(bool ac) {
 
 void board_event(void) {
     // called every main loop cycle, careful
+}
+
+void board_1s_event(void) {
+    // called every other second
+#if 0
+    DEBUG("R: ");
+    DEBUG("%s ", gpio_get(&V095A_PWRGD) ? "V095A_PWRGD" : "!V095A_PWRGD");
+    DEBUG("%s ", gpio_get(&V105A_PWRGD) ? "V095A_PWRGD" : "!V105A_PWRGD");
+    DEBUG("%s ", gpio_get(&DDR3VR_PWRGD) ? "DDR3VR_PWRGD" : "!DDR3VR_PWRGD");
+    DEBUG("%s ", gpio_get(&PCH_DPWROK_EC) ? "PCH_DPWROK_EC" : "!PCH_DPWROK_EC");
+    DEBUG("\n");
+
+    DEBUG("%s %s %s\n", gpio_get(&PM_SLP_S3) ? "SLP_S3" : "!SLP_S3", 
+                        gpio_get(&PM_SLP_S4) ? "SLP_S4" : "!SLP_S4", 
+                        gpio_get(&EC_RSMRST_N) ? "EC_RSMRST" : "!EC_RSMRST");
+#endif
 }
