@@ -10,6 +10,9 @@
 #include <ec/i2c.h>
 #include <common/debug.h>
 
+#define BAT_GAS_GAUGE_ADDR (0x16 >> 1)
+#define BAT_EEPROM_ADR (0xa0 >> 1)
+
 
 //
 // true if a battery is present, false otherwise
@@ -23,12 +26,13 @@ bool board_battery_detect(void)
 }
 
 static uint16_t last_voltage_read = 0;
+static bool sbs_battery = false;
 
 //
 // returns battery charge in % (0-100)
 // based on last battery readings
 //
-uint16_t board_get_battery_charge(void)
+uint16_t board_battery_get_charge(void)
 {
 uint16_t tvol;
 uint16_t bchgst;
@@ -36,29 +40,42 @@ unsigned char ravg=0; // rolling average
 static unsigned char ravg2=0;
 static unsigned char ravg3=0;
 
-    // if no design voltage is defined we can not determine anything,
-    // bail out
-    if (battery_design_voltage == 0)
-        return 0;
-
-    tvol=last_voltage_read;
-    tvol -= battery_min_voltage; // lower threshold, = 0%
-    if (gpio_get(&ACIN_N)) {
-        // unplugged
-        bchgst = ((30000 / (battery_design_voltage-battery_min_voltage)) * tvol) / 300;
+    if (sbs_battery) {
+        int res;
+        res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x0D, &ravg, 2);
+        if (res < 0) {
+            DEBUG(" 0x0D r=%d\n", res);
+        }
+        res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x0F, &bchgst, 2);
+        if (res < 0) {
+            DEBUG(" 0x0D r=%d\n", res);
+        } else
+            battery_remaining_capacity = bchgst;
     } else {
-        // plugged
-        bchgst = ((30000 / (battery_charge_voltage-battery_min_voltage)) * tvol) / 300;
+        // if no design voltage is defined we can not determine anything,
+        // bail out
+        if (battery_design_voltage == 0)
+            return 0;
+
+        tvol=last_voltage_read;
+        tvol -= battery_min_voltage; // lower threshold, = 0%
+        if (gpio_get(&ACIN_N)) {
+            // unplugged
+            bchgst = ((30000 / (battery_design_voltage-battery_min_voltage)) * tvol) / 300;
+        } else {
+            // plugged
+            bchgst = ((30000 / (battery_charge_voltage-battery_min_voltage)) * tvol) / 300;
+        }
+
+        if (bchgst > 100)
+            bchgst = 100;
+
+        ravg3 = ravg2;
+        ravg2 = bchgst;
+        ravg = (ravg2 + ravg3 + bchgst) / 3;
+
+        battery_remaining_capacity = (battery_design_capacity / 100) * ravg; // guess based on voltage
     }
-
-    if (bchgst > 100)
-        bchgst = 100;
-
-    ravg3 = ravg2;
-    ravg2 = bchgst;
-    ravg = (ravg2 + ravg3 + bchgst) / 3;
-
-    battery_remaining_capacity = (battery_design_capacity / 100) * ravg;
 
     return ravg; // in % from 0 to 100 - hopefully
 }
@@ -73,28 +90,88 @@ uint8_t to=0;
 uint16_t adcval;
 uint16_t tvol;
 
-    // we may have to wait for ADC to finish
-    while (to++ < 100 && !(VCH0CTL & (1L << 7)))
-        delay_us(100);
+    if (sbs_battery) {
+        int res;
+        res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x09, &tvol, 2);
+        if (res < 0) {
+            DEBUG(" 0x09 r=%d\n", res);
+        }
+        //DEBUG("SBS %dmV\n", tvol);
+    } else {
+        // we may have to wait for ADC to finish
+        while (to++ < 100 && !(VCH0CTL & (1L << 7)))
+            delay_us(100);
 
-    if (!(VCH0CTL & (1L << 7)))
-        DEBUG("BAT !adc sts=0x%02x ctl=0x%02x\n", ADCSTS, VCH0CTL);
+        if (!(VCH0CTL & (1L << 7)))
+            DEBUG("BAT !adc sts=0x%02x ctl=0x%02x\n", ADCSTS, VCH0CTL);
 
-    adcval = (((uint16_t)VCH0DATM & 0x03) << 8) | VCH0DATL;
-    // max bat voltage at max ADC value = 15.4V
-    tvol = ((14000000 / 0x3ff) * adcval) / 1000;
+        adcval = (((uint16_t)VCH0DATM & 0x03) << 8) | VCH0DATL;
+        // max bat voltage at max ADC value = 15.4V
+        tvol = ((14000000 / 0x3ff) * adcval) / 1000;
 
-    // clear ADC to start new cycle
-    VCH0CTL |= (1L << 7);
+        // clear ADC to start new cycle
+        VCH0CTL |= (1L << 7);
 
-    last_voltage_read = tvol;
+        last_voltage_read = tvol;
 
-    battery_charge = board_get_battery_charge();
+        //DEBUG("ADC %dmV\n", tvol);
+    }
 
     return tvol;
 }
 
-#define BAT_EEPROM_ADR (0xa0 >> 1)
+//
+// reads charge / discharge current
+// in Librem 14 from EC ADC channel 0
+// sense resistor 0.01 Ohm,
+// charging: IOUT x 40
+// discharging: IOUT x 16
+// EC ADC 10 bit 3Vmax
+// 3V / 0x3ff * ADC = VADC
+// (VADC / 0.01) / 40 = Icharge
+// (VADC / 0.01) / 16 = Icharge
+//
+uint16_t board_battery_get_current(void)
+{
+uint8_t to=0;
+uint16_t adcval;
+
+    if (sbs_battery) {
+        int res;
+        res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x0A, &adcval, 2);
+        if (res < 0) {
+            DEBUG(" 0x0A r=%d\n", res);
+        }
+        //DEBUG("SBS %dmA\n", adcval);
+    } else {
+        // we may have to wait for ADC to finish
+        while (to++ < 100 && !(VCH1CTL & (1L << 7)))
+            delay_us(100);
+
+        if (!(VCH1CTL & (1L << 7)))
+            DEBUG("CUR !adc sts=0x%02x ctl=0x%02x\n", ADCSTS, VCH1CTL);
+
+        adcval = (((uint16_t)VCH1DATM & 0x03) << 8) | VCH1DATL;
+
+        // DEBUG("cur raw: %d ", adcval);
+
+        // clear ADC to start new cycle
+        VCH1CTL |= (1L << 7);
+
+        adcval = adcval * (30000 / 0x3ff); // = sense voltage
+        if (gpio_get(&ACIN_N))
+            adcval = (adcval / (16)) * 10;	// no AC, discharge current
+        else
+            adcval = adcval / (4);		// on AC, charge current
+
+        //DEBUG("ADC %dmA\n", adcval);
+    }
+
+    battery_current = adcval;
+
+    return battery_current;
+}
+
 
 static bool read_eeprom(void)
 {
@@ -168,19 +245,37 @@ uint16_t max_discharge_current;
     return true;
 }
 
-#define BAT_GAS_GAUGE_ADDR (0x16 >> 1)
-
 static bool probe_gas_gauge(void)
 {
 int res;
-unsigned char tval;
+int16_t tval;
 
     res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x00, &tval, 1);
     if (res < 0) {
         DEBUG("bat gauge r=%d\n", res);
         return false;
-    } else
-        return true;
+    }
+
+    DEBUG("bat gauge:\n");
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x09, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x09 r=%d\n", res);
+    }
+    DEBUG(" %dmV\n", tval);
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x0A, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x0A r=%d\n", res);
+    }
+    DEBUG(" %dmA\n", tval);
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x0D, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x0D r=%d\n", res);
+    }
+    DEBUG(" %d%%\n", tval);
+
+    return true;
 }
 
 // try to figure out which battery we have
@@ -203,6 +298,10 @@ void board_battery_init(void)
         if (read_eeprom()) {
             DEBUG("I: 3-cell bat found\n");
             battery_status |= BATTERY_INITIALIZED;
+            sbs_battery = false;
+
+            charger_input_current = 0x1100;
+            charger_min_system_voltage = 0x1E00;
         } else {
             if (probe_gas_gauge()) {
                 battery_temp = 0;
@@ -215,9 +314,17 @@ void board_battery_init(void)
                 battery_charge_current = 1760;
                 battery_charge_voltage = 8700;
                 battery_min_voltage = 6000;
+
+                charger_input_current = 0x1100;
+                charger_min_system_voltage = 0x1600;
+
+                battery_status |= BATTERY_INITIALIZED;
+
+                sbs_battery = true;
             } else {
                 DEBUG("E: unknown bat, keeping charger off!\n");
                 battery_status &= ~BATTERY_INITIALIZED;
+                sbs_battery = false;
             }
         }
     }

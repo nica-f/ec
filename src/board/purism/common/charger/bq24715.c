@@ -25,7 +25,8 @@ static bool charger_enabled = false;
 int battery_charger_disable(void) {
     int res = 0;
 
-    if (!charger_enabled) return 0;
+    if (!charger_enabled)
+        return 0;
 
     DEBUG("CHG disable\n");
 
@@ -33,7 +34,7 @@ int battery_charger_disable(void) {
     res = smbus_write(
         CHARGER_ADDRESS,
         0x12,
-        /* SBC_EN_LWPWR |*/
+        /* SBC_EN_LWPWR |*/	// if _not_ set discharge current is monitored as well
         SBC_WDTMR_ADJ_175S |
         SBC_PWM_FREQ_800KHZ |
         SBC_AUDIO_FREQ_LIM |
@@ -42,18 +43,22 @@ int battery_charger_disable(void) {
 
     // Disable charge current
     res = smbus_write(CHARGER_ADDRESS, 0x14, 0);
-    if (res < 0) return res;
+    if (res < 0)
+        return res;
 
     // Disable charge voltage
     res = smbus_write(CHARGER_ADDRESS, 0x15, 0);
-    if (res < 0) return res;
+    if (res < 0)
+        return res;
 
     // Disable input current
     res = smbus_write(CHARGER_ADDRESS, 0x3F, 0);
-    if (res < 0) return res;
+    if (res < 0)
+        return res;
 
-    DEBUG("Charger disabled\n");
+    DEBUG("CHG disabled\n");
     charger_enabled = false;
+
     return 0;
 }
 
@@ -65,40 +70,49 @@ int battery_charger_enable(void) {
     DEBUG("CHG enable @ %dmV %dmA\n", battery_charge_voltage, battery_charge_current);
 
     res = battery_charger_disable();
-    if (res < 0) return res;
+    if (res < 0)
+        return res;
 
     // Set charge current in mA
     //res = smbus_write(CHARGER_ADDRESS, 0x14, CHARGER_CHARGE_CURRENT);
     res = smbus_write(CHARGER_ADDRESS, 0x14, battery_charge_current);
-    if (res < 0) return res;
+    if (res < 0)
+        return res;
 
     // Set charge voltage in mV
     // res = smbus_write(CHARGER_ADDRESS, 0x15, CHARGER_CHARGE_VOLTAGE);
     res = smbus_write(CHARGER_ADDRESS, 0x15, battery_charge_voltage);
-    if (res < 0) return res;
+    if (res < 0)
+        return res;
+
+    // Set minimum system voltage
+    res = smbus_write(CHARGER_ADDRESS, 0x3E, charger_min_system_voltage);
+    if (res < 0)
+        return res;
 
     // Set input current in mA
-    res = smbus_write(CHARGER_ADDRESS, 0x3F, CHARGER_INPUT_CURRENT);
-    if (res < 0) return res;
+    res = smbus_write(CHARGER_ADDRESS, 0x3F, charger_input_current);
+    if (res < 0)
+        return res;
 
     // Set charge option 0 with watchdog disabled
     res = smbus_write(
         CHARGER_ADDRESS,
         0x12,
-        SBC_EN_LWPWR |
+        /* SBC_EN_LWPWR |*/
         SBC_PWM_FREQ_800KHZ |
         SBC_AUDIO_FREQ_LIM /*|
         SBC_CHARGE_INHIBIT*/ // XXX for testing disabled
     );
 
-    DEBUG("Charger enabled\n");
+    DEBUG("CHG enabled\n");
     charger_enabled = true;
     return 0;
 }
 
 void battery_charger_event(void) {
     //TODO: watchdog
-    DEBUG("CHG event\n");
+    //DEBUG("CHG event\n");
 }
 
 void battery_debug(void) {
