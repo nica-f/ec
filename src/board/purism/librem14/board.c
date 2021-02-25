@@ -25,6 +25,13 @@ void board_init(void) {
     gpio_set(&SMI_N, true);
     gpio_set(&SWI_N, true);
 #endif
+    // Enable camera
+    gpio_set(&CCD_EN, true);
+    // Enable wireless
+    gpio_set(&BT_EN, true);
+    gpio_set(&WLAN_EN, true);
+    gpio_set(&WLAN_PWR_EN, true);
+
     // Allow CPU to boot
     gpio_set(&SB_KBCRST_N, true);
 
@@ -54,9 +61,9 @@ void board_init(void) {
     DCR1 = 0x50;
 
     // turn off notification LED RGB
-    DCR2 = 0xe0; // B
-    DCR3 = 0xe0; // G
-    DCR4 = 0xe0; // R
+    DCR2 = 0x00; // B
+    DCR3 = 0x00; // G
+    DCR4 = 0x00; // R
 
     // enable power LED control full brightness
     DCR5 = 0xff;
