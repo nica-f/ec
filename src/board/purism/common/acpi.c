@@ -10,13 +10,13 @@
 #include <common/debug.h>
 #include <ec/pwm.h>
 
-//#ifndef HAVE_LED_AIRPLANE_N
-//#define HAVE_LED_AIRPLANE_N 1
-//#endif // HAVE_LED_AIRPLANE_N
+#ifndef HAVE_LED_AIRPLANE_N
+#define HAVE_LED_AIRPLANE_N 1
+#endif // HAVE_LED_AIRPLANE_N
 
-#ifndef HAVE_LED_AIRPLANE
-#define HAVE_LED_AIRPLANE 1
-#endif // HAVE_LED_AIRPLANE
+//#ifndef HAVE_LED_AIRPLANE
+//#define HAVE_LED_AIRPLANE 1
+//#endif // HAVE_LED_AIRPLANE
 
 extern uint8_t sci_extra;
 
@@ -178,7 +178,7 @@ uint8_t acpi_read(uint8_t addr) {
                 data |= (1 << 6);
             }
             break;
-#endif // HAVE_LED_AIRPLANE_N
+#endif // HAVE_LED_AIRPLANE
 
         // Set size of flash (from old firmware)
         ACPI_8 (0xE5, 0x80);

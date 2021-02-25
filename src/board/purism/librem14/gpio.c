@@ -114,10 +114,12 @@ struct Gpio __code DD_ON =          GPIO(H, 3);		// debug VDD on/off, NA use dum
 // struct Gpio __code EC_EN =          GPIO(E, 1);
 struct Gpio __code EC_RSMRST_N =    GPIO(B, 7);		//
 // struct Gpio __code LAN_WAKEUP_N =   GPIO(B, 2);
-struct Gpio __code LED_ACIN =       GPIO(C, 5);		// pwr white LED, temporary
-struct Gpio __code LED_AIRPLANE =   GPIO(F, 3);		// WiFi HKS LED
-struct Gpio __code LED_BAT_CHG =    GPIO(J, 4);		// orange LED
-struct Gpio __code LED_BAT_FULL =   GPIO(J, 5);		// green LED
+//struct Gpio __code LED_ACIN =       GPIO(C, 5);		// pwr white LED, temporary
+//struct Gpio __code LED_AIRPLANE =   GPIO(F, 3);		// WiFi HKS LED
+struct Gpio __code LED_AIRPLANE_N =   GPIO(F, 3);		// WiFi HKS LED
+struct Gpio __code LED_BAT_CHG =    GPIO(J, 4);		// green LED
+//struct Gpio __code LED_BAT_FULL =   GPIO(J, 5);	// green LED
+struct Gpio __code LED_BAT_WARN =   GPIO(J, 5);		// orange LED
 struct Gpio __code LED_PWR =        GPIO(C, 5);		//
 struct Gpio __code LID_SW =         GPIO(H, 6);		//
 struct Gpio __code PCH_DPWROK_EC =  GPIO(F, 5);		// DSW_PWROK -> DPW_PWROK -> A_POWER_OK
@@ -136,7 +138,7 @@ struct Gpio __code SCI_N =          GPIO(D, 3);		//
 //struct Gpio __code SUS_PWR_ACK =    GPIO(J, 0);
 struct Gpio __code SWI_N =          GPIO(D, 4);		// ECSCI#
 struct Gpio __code USB_PWR_EN_N =   GPIO(I, 7);		// type-C +5V enable
-struct Gpio __code VA_EC_EN =       GPIO(E, 1);
+//struct Gpio __code VA_EC_EN =       GPIO(E, 1);
 //struct Gpio __code VR_ON =          GPIO(B, 5);		//
 struct Gpio __code WLAN_EN =        GPIO(D, 5);		//
 struct Gpio __code WLAN_PWR_EN =    GPIO(D, 0);		// 
@@ -192,7 +194,7 @@ void gpio_init() {
     GPCRB7 = GPIO_OUT;		// PM_RSMRST#
 
     // GPIO port C
-    GPDRC = (1 << 6);		// enable power supply for ethernet by default
+    GPDRC = (1 << 5) | (0x80);		// disable power LED
     //GPDRC = (0x28);		// enable power supply for ethernet by default
 
     GPCRC0 = GPIO_OUT;		// POWER_TP_ON, touchpad power on
@@ -205,12 +207,13 @@ void gpio_init() {
     GPCRC7 = GPIO_OUT;		// W_DISABLE2 on WiFi/BT M.2 slot
 
     // GPIO port D
-    GPDRD = (1 << 4) | (1 << 3);
+    //GPDRD = (1 << 4) | (1 << 3) | (0x80);
+    GPDRD = (uint8_t) 0x98U;
     //GPDRD = (0x68);
 
     GPCRD0 = GPIO_OUT;		// WiFi/BT M.2 power supply on/off
     GPCRD1 = GPIO_IN;		// DDR3VR_PWRGD
-    GPCRD2 = GPIO_ALT;		// PLT_RST_BUF#, EC reset
+    GPCRD2 = GPIO_ALT;		// PLT_RST_BUF#, LPC reset
     GPCRD3 = GPIO_OUT;		// SMC_RUNTIME_SCI#
     GPCRD4 = GPIO_OUT;		// SMC_EXTSMI#
     GPCRD5 = GPIO_OUT;		// W_DISABLE1 on WiFi/BT M.2 slot
@@ -231,7 +234,7 @@ void gpio_init() {
     GPCRE7 = GPIO_OUT;		// PM_BATLOW#
     
     // GPIO port F
-    GPDRF = (1 << 5);		// ???
+    GPDRF = (1 << 3) | (1 << 5);		//
     //GPDRF = (0x20);		// ???
 
     GPCRF0 = GPIO_OUT;		// audio codec SPDIF0/GPIO2 -> toggle for headphone mic input
@@ -253,7 +256,7 @@ void gpio_init() {
     GPCRG6 = GPIO_OUT;		// V1.05A_EN
     
     // GPIO port H
-    GPDRH = (1 << 4);
+    GPDRH = (1 << 4) | (1 << 3);
     //GPDRH = (0x70);
 
     GPCRH0 = GPIO_ALT;		// LPC_CLKRUN#
@@ -279,15 +282,15 @@ void gpio_init() {
     GPCRI7 = GPIO_OUT;		// type-C USB port 5V power enable
     
     // GPIO port J
-    GPDRJ = 0x00; /*(1 << 0) | (1 << 2) | (1 << 5)*/;		//
+    GPDRJ = (1 << 4) | (1 << 5); // LEDs have negative logic, turn off
     //GPDRJ = 0x04;
 
     GPCRJ0 = GPIO_OUT;		// PROCHOT#_EC, device overheat
     GPCRJ1 = GPIO_OUT;		// DIS_BAT
     GPCRJ2 = GPIO_OUT;		// camera power on
     GPCRJ3 = GPIO_IN;		// NA
-    GPCRJ4 = GPIO_OUT;		// power/chargeing LED orange enable/disable
-    GPCRJ5 = GPIO_OUT;		// power/chargeing LED green enable/disable
+    GPCRJ4 = GPIO_OUT;		// power/chargeing LED green enable/disable
+    GPCRJ5 = GPIO_OUT;		// power/chargeing LED orange enable/disable
     // GPJ6,7 = crystal input
 
     // GPIO port M
