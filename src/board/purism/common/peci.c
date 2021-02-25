@@ -25,7 +25,8 @@ static uint8_t FAN_HEATUP[BOARD_HEATUP] = { 0 };
 static uint8_t FAN_COOLDOWN[BOARD_COOLDOWN] = { 0 };
 
 // Tjunction = 100C for i7-8565U (and probably the same for all WHL-U)
-#define T_JUNCTION 100
+//#define T_JUNCTION 100
+#define T_JUNCTION 120
 
 int16_t peci_temp = 0;
 
@@ -151,6 +152,7 @@ void peci_event(void) {
         while (HOSTAR & 1) {}
 
         if (HOSTAR & (1 << 1)) {
+            //int16_t temp;
             // Use result if finished successfully
             uint8_t low = HORDDR;
             uint8_t high = HORDDR;
@@ -158,10 +160,17 @@ void peci_event(void) {
 
             peci_temp = PECI_TEMP(T_JUNCTION) + peci_offset;
             duty = fan_duty(&FAN, peci_temp);
+            //temp= ((int16_t)high << 8) | (int16_t)low;
+            //temp = ((temp ^ 0xFFFF) + 1) >> 6;
+            //temp = T_JUNCTION - temp + 273;
+            //temp /= 64;
+            //temp = (temp & 0x0fff);
+            DEBUG("1PECI temp=%d / %d\n", peci_temp, duty);
         } else {
             // Default to 50% if there is an error
             peci_temp = 0;
             duty = PWM_DUTY(50);
+            DEBUG("E: PECI temp\n");
         }
     } else {
         // Turn fan off if not in S0 state
@@ -178,7 +187,7 @@ void peci_event(void) {
         duty = fan_cooldown(&FAN, duty);
     }
 
-    if (duty != DCR0) {
+    if (duty != DCR0 || duty != DCR1) {
         DCR0 = duty;
         DCR1 = duty;
         DEBUG("PECI temp=%d = %d\n", peci_temp, duty);
