@@ -5,6 +5,7 @@
 #include <board/smbus.h>
 #include <board/gpio.h>
 #include <board/board.h>
+#include <board/power.h>
 #include <common/debug.h>
 #include <ec/adc.h>
 
@@ -73,10 +74,25 @@ int battery_charger_configure(void) {
         should_charge = true;
     }
 
-    if (battery_present && should_charge)
+    if (battery_present && should_charge) {
+        gpio_set(&LED_BAT_CHG, false);
+        // while 'on' only light the charging LED
+        if (power_state == POWER_STATE_DS3 ||
+            power_state == POWER_STATE_S3 ||
+            power_state == POWER_STATE_S0) {
+            gpio_set(&LED_PWR, true);
+        }
         return battery_charger_enable();
-    else
+    } else {
+        gpio_set(&LED_BAT_CHG, true);
+        // turn power LED back on when not chargin
+        if (power_state == POWER_STATE_DS3 ||
+            power_state == POWER_STATE_S3 ||
+            power_state == POWER_STATE_S0) {
+            gpio_set(&LED_PWR, false);
+        }
         return battery_charger_disable();
+    }
 }
 
 uint16_t battery_temp = 0;
@@ -138,4 +154,7 @@ void battery_event(void) {
 void battery_reset(void) {
     battery_start_threshold = BATTERY_START_THRESHOLD;
     battery_end_threshold = BATTERY_END_THRESHOLD;
+    gpio_set(&LED_BAT_CHG, true);
+    gpio_set(&LED_BAT_WARN, true);
+    //gpio_set(&LED_BAT_FULL, false);
 }
