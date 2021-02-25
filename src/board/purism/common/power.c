@@ -2,6 +2,9 @@
 
 #include <arch/delay.h>
 #include <arch/time.h>
+
+#include <ec/pwm.h>
+
 #include <board/acpi.h>
 #include <board/battery.h>
 #include <board/board.h>
@@ -13,6 +16,7 @@
 #include <board/power.h>
 #include <board/pmc.h>
 #include <board/pnp.h>
+
 #include <common/debug.h>
 
 #include <ec/espi.h>
@@ -70,7 +74,7 @@
 #endif
 
 #ifndef HAVE_VA_EC_EN
-    #define HAVE_VA_EC_EN 1
+    #define HAVE_VA_EC_EN 0
 #endif
 
 #ifndef HAVE_XLP_OUT
@@ -255,7 +259,7 @@ void power_on_s5(void) {
 
     DEBUG("2 DDR3V3 %d\n", gpio_get(&DDR3VR_PWRGD));
     tPCH06;
-    GPIO_SET_DEBUG(ALL_SYS_PWRGD_VRON, true)
+    GPIO_SET_DEBUG(ALL_SYS_PWRGD_VRON, true);
 
     // Enable VDD5
     GPIO_SET_DEBUG(DD_ON, true);
@@ -317,6 +321,7 @@ void power_on_s5(void) {
 
     GPIO_SET_DEBUG(POWER_TP_ON, true);
     GPIO_SET_DEBUG(CCD_EN, true);
+    GPIO_SET_DEBUG(POWER_ETH_ON, true);
 
     update_power_state();
     DEBUG("E\n");
@@ -327,6 +332,7 @@ void power_off_s5(void) {
 
     GPIO_SET_DEBUG(POWER_TP_ON, false);		// no need for TP in S5
     GPIO_SET_DEBUG(CCD_EN, false);		// no need for camera in S5
+    GPIO_SET_DEBUG(POWER_ETH_ON, false);	// no wake on LAN -> power off ethernet
 
 #if DEEP_SX
     // TODO
@@ -351,6 +357,7 @@ void power_off_s5(void) {
     GPIO_SET_DEBUG(DD_ON, false);
     tPCH12;
 
+    GPIO_SET_DEBUG(ALL_SYS_PWRGD_VRON, false);
     GPIO_SET_DEBUG(V095A_EN, false);
     GPIO_SET_DEBUG(V105A_EN, false);
 
@@ -482,10 +489,13 @@ void power_event(void) {
             DEBUG("%02X: Power switch release\n", main_cycle);
         }
     #endif
-    ps_last = ps_new;
-
-    // Send power signal to PCH
-    gpio_set(&PWR_BTN_N, ps_new);
+    if (ps_last != ps_new) {
+        // Send power signal to PCH
+        //gpio_set(&PWR_BTN_N, ps_new);
+        GPIO_SET_DEBUG(PWR_BTN_N, ps_new);
+        ps_last = ps_new;
+        delay_ms(1);
+    }
 
     // Update power state before determining actions
     update_power_state();
@@ -609,16 +619,18 @@ void power_event(void) {
                 gpio_set(&LED_PWR, !gpio_get(&LED_PWR));
                 last_time = time;
             }
-            gpio_set(&LED_ACIN, false);
+            //gpio_set(&LED_ACIN, false);
         } else
 #endif
         {
-            // CPU on, green light
-            gpio_set(&LED_PWR, true);
-            gpio_set(&LED_ACIN, false);
+            // CPU on, white LED on, full brightness
+            gpio_set(&LED_PWR, false);
+            DCR5 = 0xff;
+            //gpio_set(&LED_ACIN, false);
         }
     } else if (power_state == POWER_STATE_S3 || power_state == POWER_STATE_DS3) {
         // Suspended, flashing green light
+#if 0
         if (
             (time < last_time) // overflow
             ||
@@ -627,20 +639,23 @@ void power_event(void) {
             gpio_set(&LED_PWR, !gpio_get(&LED_PWR));
             last_time = time;
         }
-        gpio_set(&LED_ACIN, false);
+        //gpio_set(&LED_ACIN, false);
+#else
+        DCR5 += 1;
+#endif
     } else if (!ac_new) {
-        // AC plugged in, orange light
-        gpio_set(&LED_PWR, false);
-        gpio_set(&LED_ACIN, true);
+        // AC plugged in, but in < S3, white LED off
+        gpio_set(&LED_PWR, true);
+        //gpio_set(&LED_ACIN, true);
     } else {
         // CPU off and AC adapter unplugged, flashing orange light
-        gpio_set(&LED_PWR, false);
+        gpio_set(&LED_PWR, true);
         if (
             (time < last_time) // overflow
             ||
             (time >= (last_time + 1000)) // timeout
         ) {
-            gpio_set(&LED_ACIN, !gpio_get(&LED_ACIN));
+            //gpio_set(&LED_ACIN, !gpio_get(&LED_ACIN));
             last_time = time;
         }
 
@@ -651,7 +666,8 @@ void power_event(void) {
     }
 
 //TODO: do not require both LEDs
-#if HAVE_LED_BAT_CHG && HAVE_LED_BAT_FULL
+//#if HAVE_LED_BAT_CHG && HAVE_LED_BAT_FULL
+#if 0
     if (!(battery_status & BATTERY_INITIALIZED)) {
         // No battery connected
         gpio_set(&LED_BAT_CHG, false);
