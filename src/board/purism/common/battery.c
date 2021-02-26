@@ -98,7 +98,7 @@ int battery_charger_configure(void) {
 uint16_t battery_temp = 0;
 uint16_t battery_voltage = 0;
 uint16_t battery_current = 0;
-uint16_t battery_charge = 0;
+uint16_t battery_charge = 100; // assume 100% for a start
 uint16_t battery_remaining_capacity = 0;
 uint16_t battery_full_capacity = 0;
 uint16_t battery_status = 0;

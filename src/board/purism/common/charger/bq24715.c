@@ -40,7 +40,7 @@ int battery_charger_disable(void) {
         SBC_AUDIO_FREQ_LIM |
         SBC_CHARGE_INHIBIT
     );
-
+#if 0
     // Disable charge current
     res = smbus_write(CHARGER_ADDRESS, 0x14, 0);
     if (res < 0)
@@ -55,7 +55,7 @@ int battery_charger_disable(void) {
     res = smbus_write(CHARGER_ADDRESS, 0x3F, 0);
     if (res < 0)
         return res;
-
+#endif
     DEBUG("CHG disabled\n");
     charger_enabled = false;
 
@@ -119,7 +119,7 @@ void battery_debug(void) {
     uint16_t data = 0;
     int res = 0;
 
-    #define command(N, A, V) { \
+    #define commandx(N, A, V) { \
         DEBUG("  " #N ": "); \
         res = smbus_read(A, V, &data); \
         if (res < 0) { \
@@ -129,14 +129,24 @@ void battery_debug(void) {
         } \
     }
 
+    #define command(N, A, V) { \
+        DEBUG("  " #N ": "); \
+        res = smbus_read(A, V, &data); \
+        if (res < 0) { \
+            DEBUG("ERROR %04X\n", -res); \
+        } else { \
+            DEBUG("%d\n", data); \
+        } \
+    }
+
     DEBUG("Charger (bq24715):\n");
-    command(ChargeOption0, CHARGER_ADDRESS, 0x12);
+    commandx(ChargeOption0, CHARGER_ADDRESS, 0x12);
     command(ChargeCurrent, CHARGER_ADDRESS, 0x14);
     command(ChargeVoltage, CHARGER_ADDRESS, 0x15);
     command(MinSysVoltage, CHARGER_ADDRESS, 0x3E);
     command(InputCurrent, CHARGER_ADDRESS, 0x3F);
-    command(ManufacturerID, CHARGER_ADDRESS, 0xFE);
-    command(DeviceID, CHARGER_ADDRESS, 0xFF);
+    commandx(ManufacturerID, CHARGER_ADDRESS, 0xFE);
+    commandx(DeviceID, CHARGER_ADDRESS, 0xFF);
 
     #undef command
 }

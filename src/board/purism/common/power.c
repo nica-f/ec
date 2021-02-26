@@ -330,7 +330,7 @@ void power_on_s5(void) {
 void power_off_s5(void) {
     DEBUG("%02X: power_off_s5\n", main_cycle);
 
-    GPIO_SET_DEBUG(POWER_TP_ON, false);		// no need for TP in S5
+    //GPIO_SET_DEBUG(POWER_TP_ON, false);		// no need for TP in S5
     GPIO_SET_DEBUG(CCD_EN, false);		// no need for camera in S5
     GPIO_SET_DEBUG(POWER_ETH_ON, false);	// no wake on LAN -> power off ethernet
 
