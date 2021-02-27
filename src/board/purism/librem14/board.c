@@ -30,7 +30,7 @@ void board_init(void) {
     // Enable wireless
     gpio_set(&BT_EN, true);
     gpio_set(&WLAN_EN, true);
-    gpio_set(&WLAN_PWR_EN, true);
+    //gpio_set(&WLAN_PWR_EN, true);
 
     // Allow CPU to boot
     gpio_set(&SB_KBCRST_N, true);
@@ -91,12 +91,20 @@ void board_on_ac(bool ac) {
     }
 }
 
+// called every main loop cycle, careful
 void board_event(void) {
-    // called every main loop cycle, careful
+static uint16_t cled=0;
+
+    DCR2 = (cled & 0x0300) == 0 ? (cled & 0xff) : 0x00;
+    DCR3 = (cled & 0x0300) == 0x0100 ? (cled & 0xff) : 0x00;
+    DCR4 = (cled & 0x0300) == 0x0200 ? (cled & 0xff) : 0x00;
+    cled++;
+    if (cled > (3 * 0xff))
+        cled=0;
 }
 
+// called once per second
 void board_1s_event(void) {
-    // called every other second
 #if 0
     DEBUG("R: ");
     DEBUG("%s ", gpio_get(&V095A_PWRGD) ? "V095A_PWRGD" : "!V095A_PWRGD");
