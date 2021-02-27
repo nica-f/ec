@@ -291,6 +291,9 @@ void board_battery_init(void)
     battery_design_voltage = 0;
     battery_status &= ~BATTERY_INITIALIZED;
 
+    battery_charger_disable();
+    charger_input_current = 1024; // about 1A @ 19V ~= 20W
+
     battery_present = board_battery_detect();
 
     if (battery_present) {
@@ -300,10 +303,12 @@ void board_battery_init(void)
             battery_status |= BATTERY_INITIALIZED;
             sbs_battery = false;
 
-            charger_input_current = 0x1100;
+            gpio_set(&CHG_CELL_CFG, false);
+            // charger_input_current = 0x1100;
             charger_min_system_voltage = 0x1E00;
         } else {
             if (probe_gas_gauge()) {
+                DEBUG("I: 4-cell bat found\n");
                 battery_temp = 0;
                 battery_current = 0;
                 battery_charge = 0;
@@ -315,7 +320,8 @@ void board_battery_init(void)
                 battery_charge_voltage = 8700;
                 battery_min_voltage = 6000;
 
-                charger_input_current = 0x1100;
+                gpio_set(&CHG_CELL_CFG, true);
+                // charger_input_current = 0x1100;
                 charger_min_system_voltage = 0x1600;
 
                 battery_status |= BATTERY_INITIALIZED;
@@ -324,6 +330,7 @@ void board_battery_init(void)
             } else {
                 DEBUG("E: unknown bat, keeping charger off!\n");
                 battery_status &= ~BATTERY_INITIALIZED;
+                gpio_set(&CHG_CELL_CFG, true);
                 sbs_battery = false;
             }
         }

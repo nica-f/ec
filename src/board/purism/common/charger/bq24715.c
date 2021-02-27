@@ -40,14 +40,14 @@ int battery_charger_disable(void) {
         SBC_AUDIO_FREQ_LIM |
         SBC_CHARGE_INHIBIT
     );
-#if 0
-    // Disable charge current
-    res = smbus_write(CHARGER_ADDRESS, 0x14, 0);
+#if 1
+    // Disable charge voltage
+    res = smbus_write(CHARGER_ADDRESS, 0x15, 0);
     if (res < 0)
         return res;
 
-    // Disable charge voltage
-    res = smbus_write(CHARGER_ADDRESS, 0x15, 0);
+    // Disable charge current
+    res = smbus_write(CHARGER_ADDRESS, 0x14, 0);
     if (res < 0)
         return res;
 
@@ -73,18 +73,6 @@ int battery_charger_enable(void) {
     if (res < 0)
         return res;
 
-    // Set charge current in mA
-    //res = smbus_write(CHARGER_ADDRESS, 0x14, CHARGER_CHARGE_CURRENT);
-    res = smbus_write(CHARGER_ADDRESS, 0x14, battery_charge_current);
-    if (res < 0)
-        return res;
-
-    // Set charge voltage in mV
-    // res = smbus_write(CHARGER_ADDRESS, 0x15, CHARGER_CHARGE_VOLTAGE);
-    res = smbus_write(CHARGER_ADDRESS, 0x15, battery_charge_voltage);
-    if (res < 0)
-        return res;
-
     // Set minimum system voltage
     res = smbus_write(CHARGER_ADDRESS, 0x3E, charger_min_system_voltage);
     if (res < 0)
@@ -92,6 +80,17 @@ int battery_charger_enable(void) {
 
     // Set input current in mA
     res = smbus_write(CHARGER_ADDRESS, 0x3F, charger_input_current);
+    if (res < 0)
+        return res;
+
+    // Set charge voltage in mV
+    res = smbus_write(CHARGER_ADDRESS, 0x15, battery_charge_voltage);
+    if (res < 0)
+        return res;
+
+    // Set charge current in mA,
+    // setting the current to a valid value will enable charging!
+    res = smbus_write(CHARGER_ADDRESS, 0x14, battery_charge_current);
     if (res < 0)
         return res;
 

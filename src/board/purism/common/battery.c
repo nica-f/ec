@@ -55,7 +55,7 @@ bool battery_set_end_threshold(uint8_t value) {
  * Configure the charger based on charging threshold values.
  */
 int battery_charger_configure(void) {
-    static bool should_charge = true;
+    static bool should_charge = false;
 
     /*if (battery_get_end_threshold() == BATTERY_END_DEFAULT) {
         // Stop threshold not configured: Always charge on AC.
