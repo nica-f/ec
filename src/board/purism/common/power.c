@@ -322,6 +322,8 @@ void power_on_s5(void) {
     GPIO_SET_DEBUG(POWER_TP_ON, true);
     GPIO_SET_DEBUG(CCD_EN, true);
     GPIO_SET_DEBUG(POWER_ETH_ON, true);
+    GPIO_SET_DEBUG(WLAN_PWR_EN, true);
+    GPIO_SET_DEBUG(LED_AIRPLANE_N, true);
 
     update_power_state();
     DEBUG("E\n");
@@ -330,9 +332,11 @@ void power_on_s5(void) {
 void power_off_s5(void) {
     DEBUG("%02X: power_off_s5\n", main_cycle);
 
-    //GPIO_SET_DEBUG(POWER_TP_ON, false);		// no need for TP in S5
+    GPIO_SET_DEBUG(POWER_TP_ON, false);		// no need for TP in S5
     GPIO_SET_DEBUG(CCD_EN, false);		// no need for camera in S5
-    GPIO_SET_DEBUG(POWER_ETH_ON, false);	// no wake on LAN -> power off ethernet
+    GPIO_SET_DEBUG(POWER_ETH_ON, false);	// power off ethernet
+    GPIO_SET_DEBUG(WLAN_PWR_EN, false);		// power down WiFi/BT
+    GPIO_SET_DEBUG(LED_AIRPLANE_N, false);
 
 #if DEEP_SX
     // TODO
@@ -659,6 +663,7 @@ void power_event(void) {
             last_time = time;
         }
 
+        gpio_set(&SMC_SHUTDOWN_N, false); // XXX
 #if HAVE_XLP_OUT
         // Power off VDD3 if system should be off
         gpio_set(&XLP_OUT, 0);
