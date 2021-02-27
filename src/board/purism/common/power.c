@@ -610,6 +610,7 @@ void power_event(void) {
 #endif // HAVE_LAN_WAKEUP_N
 
     static uint32_t last_time = 0;
+    static bool dimdir=true;
     uint32_t time = time_get();
     if (power_state == POWER_STATE_S0) {
 #if EC_ESPI
@@ -645,7 +646,11 @@ void power_event(void) {
         }
         //gpio_set(&LED_ACIN, false);
 #else
-        DCR5 += 1;
+        DCR5 += dimdir ? 1 : -1;
+        if (DCR5 == 0xff)
+            dimdir = false;
+        if (DCR5 == 0x00)
+            dimdir = true;
 #endif
     } else if (!ac_new) {
         // AC plugged in, but in < S3, white LED off
