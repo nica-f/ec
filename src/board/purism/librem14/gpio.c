@@ -117,9 +117,9 @@ struct Gpio __code EC_RSMRST_N =    GPIO(B, 7);		//
 //struct Gpio __code LED_ACIN =       GPIO(C, 5);		// pwr white LED, temporary
 //struct Gpio __code LED_AIRPLANE =   GPIO(F, 3);		// WiFi HKS LED
 struct Gpio __code LED_AIRPLANE_N =   GPIO(F, 3);		// WiFi HKS LED
-struct Gpio __code LED_BAT_CHG =    GPIO(J, 4);		// green LED
+struct Gpio __code LED_BAT_CHG =    GPIO(J, 5);		// green LED
 //struct Gpio __code LED_BAT_FULL =   GPIO(J, 5);	// green LED
-struct Gpio __code LED_BAT_WARN =   GPIO(J, 5);		// orange LED
+struct Gpio __code LED_BAT_WARN =   GPIO(J, 4);		// orange LED
 struct Gpio __code LED_PWR =        GPIO(C, 5);		//
 struct Gpio __code LID_SW =         GPIO(H, 6);		//
 struct Gpio __code PCH_DPWROK_EC =  GPIO(F, 5);		// DSW_PWROK -> DPW_PWROK -> A_POWER_OK
@@ -162,6 +162,8 @@ struct Gpio __code BAT_DETECT =   GPIO(I, 2);
 struct Gpio __code POWER_TP_ON =    GPIO(C, 0);			// power supply for touchpad
 struct Gpio __code POWER_ETH_ON =   GPIO(C, 6);			// power supply for Gbit ethernet controller
 struct Gpio __code KBD_BACKLIGHT_EN = GPIO(A, 6);
+
+struct Gpio __code CHG_CELL_CFG = GPIO(J, 1);
 
 
 void gpio_init() {
@@ -234,7 +236,7 @@ void gpio_init() {
     GPCRE7 = GPIO_OUT;		// PM_BATLOW#
     
     // GPIO port F
-    GPDRF = (1 << 3) | (1 << 5);		//
+    GPDRF = (1 << 5);		//
     //GPDRF = (0x20);		// ???
 
     GPCRF0 = GPIO_OUT;		// audio codec SPDIF0/GPIO2 -> toggle for headphone mic input
@@ -282,11 +284,11 @@ void gpio_init() {
     GPCRI7 = GPIO_OUT;		// type-C USB port 5V power enable
     
     // GPIO port J
-    GPDRJ = (1 << 4) | (1 << 5); // LEDs have negative logic, turn off
+    GPDRJ = (1 << 1) | (1 << 4) | (1 << 5); // LEDs have negative logic, turn off, default 2S CELL
     //GPDRJ = 0x04;
 
     GPCRJ0 = GPIO_OUT;		// PROCHOT#_EC, device overheat
-    GPCRJ1 = GPIO_OUT;		// DIS_BAT
+    GPCRJ1 = GPIO_OUT;		// DIS_BAT, CELL config for charge controller, 3S low, 2S high
     GPCRJ2 = GPIO_OUT;		// camera power on
     GPCRJ3 = GPIO_IN;		// NA
     GPCRJ4 = GPIO_OUT;		// power/chargeing LED green enable/disable
