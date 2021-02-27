@@ -63,6 +63,7 @@ void acpi_reset(void) {
     // ECOS: No ACPI or driver
     acpi_ecos = EC_OS_NONE;
 
+#if 0
 #if HAVE_LED_AIRPLANE_N
     // Clear airplane mode LED
     gpio_set(&LED_AIRPLANE_N, true);
@@ -70,6 +71,7 @@ void acpi_reset(void) {
 #if HAVE_LED_AIRPLANE
     // Clear airplane mode LED
     gpio_set(&LED_AIRPLANE, false);
+#endif
 #endif
 }
 
