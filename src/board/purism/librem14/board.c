@@ -78,6 +78,7 @@ void board_init(void) {
 void board_on_ac(bool ac) {
     DEBUG("board ac %s\n", ac ? "t" : "f");
     // as long as we are on AC we keep the EC powered
+#if 0
     if (ac)
         gpio_set(&SMC_SHUTDOWN_N, false);
     else {
@@ -89,6 +90,7 @@ void board_on_ac(bool ac) {
         } else
                 gpio_set(&SMC_SHUTDOWN_N, false);
     }
+#endif
 }
 
 // called every main loop cycle, careful

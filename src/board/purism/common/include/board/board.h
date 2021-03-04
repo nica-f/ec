@@ -23,4 +23,5 @@ uint16_t board_battery_get_current(void);
 // charge in % (0 to 100)
 uint16_t board_battery_get_charge(void);
 
+void board_battery_update_state(void);
 #endif // _BOARD_BOARD_H

@@ -106,7 +106,7 @@ KSO0 - KSO15 / KSI0 - KSI7  keyboard matrix
 struct Gpio __code ACIN_N =         GPIO(I, 5);		// ADP_IN#
 struct Gpio __code AC_PRESENT =     GPIO(C, 4);		// AC_PRESENT
 //struct Gpio __code ALL_SYS_PWRGD =  GPIO(B, 5);		// ALL_SYS_PWRGD_VRON
-struct Gpio __code BKL_EN =         GPIO(E, 0);		// LED_ON
+struct Gpio __code BKL_EN =         GPIO(E, 0);		// LCD backlight LED_ON
 struct Gpio __code BT_EN =          GPIO(C, 7);		// BT_ON
 struct Gpio __code BUF_PLT_RST_N =  GPIO(D, 2);
 struct Gpio __code CCD_EN =         GPIO(J, 2);		// camera on/off
@@ -284,11 +284,11 @@ void gpio_init() {
     GPCRI7 = GPIO_OUT;		// type-C USB port 5V power enable
     
     // GPIO port J
-    GPDRJ = (1 << 1) | (1 << 4) | (1 << 5); // LEDs have negative logic, turn off, default 2S CELL
+    GPDRJ = (1 << 4) | (1 << 5); // LEDs have negative logic, turn off, default 2S CELL
     //GPDRJ = 0x04;
 
     GPCRJ0 = GPIO_OUT;		// PROCHOT#_EC, device overheat
-    GPCRJ1 = GPIO_OUT;		// DIS_BAT, CELL config for charge controller, 3S low, 2S high
+    GPCRJ1 = GPIO_OUT;		// DIS_BAT, CELL config for charge controller
     GPCRJ2 = GPIO_OUT;		// camera power on
     GPCRJ3 = GPIO_IN;		// NA
     GPCRJ4 = GPIO_OUT;		// power/chargeing LED green enable/disable

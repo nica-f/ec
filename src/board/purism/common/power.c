@@ -358,7 +358,7 @@ void power_off_s5(void) {
     GPIO_SET_DEBUG(EC_RSMRST_N, false);
 
     // Disable VDD5
-    GPIO_SET_DEBUG(DD_ON, false);
+    //GPIO_SET_DEBUG(DD_ON, false);
     tPCH12;
 
     GPIO_SET_DEBUG(ALL_SYS_PWRGD_VRON, false);
@@ -629,7 +629,10 @@ void power_event(void) {
 #endif
         {
             // CPU on, white LED on, full brightness
-            gpio_set(&LED_PWR, false);
+            if (gpio_get(&LED_BAT_CHG))
+                gpio_set(&LED_PWR, false);
+            else
+                gpio_set(&LED_PWR, true);
             DCR5 = 0xff;
             //gpio_set(&LED_ACIN, false);
         }
@@ -668,7 +671,7 @@ void power_event(void) {
             last_time = time;
         }
 
-        gpio_set(&SMC_SHUTDOWN_N, false); // XXX
+        GPIO_SET_DEBUG(SMC_SHUTDOWN_N, false); // XXX
 #if HAVE_XLP_OUT
         // Power off VDD3 if system should be off
         gpio_set(&XLP_OUT, 0);
