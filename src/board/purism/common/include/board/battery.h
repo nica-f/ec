@@ -28,6 +28,10 @@ extern uint16_t battery_design_voltage;
 extern uint16_t battery_charge_voltage;
 extern uint16_t battery_charge_current;
 extern uint16_t battery_min_voltage;
+
+extern uint16_t battery_cycle_count;
+extern uint16_t battery_manufacturing_date;
+
 extern bool battery_present;
 
 extern uint16_t charger_input_current;

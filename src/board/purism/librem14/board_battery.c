@@ -223,9 +223,9 @@ uint16_t max_discharge_current;
         max_discharge_current=0;
     res = i2c_get(&I2C_0, BAT_EEPROM_ADR, 0x0C, &charge_current, 2);
     if (res < 0)
-        charge_current=0;
+        charge_current = 0;
     else
-        battery_charge_current=charge_current;
+        battery_charge_current = charge_current;
 
     DEBUG("  VID:      0x%02x\n", vendor_id);
     DEBUG("  cell ID:  0x%02x\n", cell_brand_id);
@@ -245,6 +245,54 @@ uint16_t max_discharge_current;
     return true;
 }
 
+static void update_gas_gauge(void)
+{
+int res;
+int16_t tval;
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x09, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x09 r=%d\n", res);
+    }
+    battery_voltage = tval;
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x08, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x08 r=%d\n", res);
+    }
+    battery_temp = (tval - 2731);
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x0A, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x0A r=%d\n", res);
+    }
+    battery_current = tval;
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x0D, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x0D r=%d\n", res);
+    }
+    battery_charge = tval;
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x0F, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x0F r=%d\n", res);
+    }
+    battery_remaining_capacity = tval;
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x10, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x10 r=%d\n", res);
+    }
+    battery_full_capacity = tval;
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x17, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x17 r=%d\n", res);
+    }
+    battery_cycle_count = tval;
+}
+
 static bool probe_gas_gauge(void)
 {
 int res;
@@ -262,20 +310,112 @@ int16_t tval;
         DEBUG(" 0x09 r=%d\n", res);
     }
     DEBUG(" %dmV\n", tval);
+    battery_voltage = tval;
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x08, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x08 r=%d\n", res);
+    }
+    DEBUG(" temp: %d\n", tval);
+    battery_temp = (tval - 2731);
 
     res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x0A, &tval, 2);
     if (res < 0) {
         DEBUG(" 0x0A r=%d\n", res);
     }
     DEBUG(" %dmA\n", tval);
+    battery_current = tval;
 
     res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x0D, &tval, 2);
     if (res < 0) {
         DEBUG(" 0x0D r=%d\n", res);
     }
     DEBUG(" %d%%\n", tval);
+    battery_charge = tval;
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x0F, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x0F r=%d\n", res);
+    }
+    DEBUG(" rem cap: %d\n", tval);
+    battery_remaining_capacity = tval;
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x10, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x10 r=%d\n", res);
+    }
+    DEBUG(" full cap: %d\n", tval);
+    battery_full_capacity = tval;
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x14, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x14 r=%d\n", res);
+    }
+    DEBUG(" chg cur: %d\n", tval);
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x15, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x15 r=%d\n", res);
+    }
+    DEBUG(" chg volt: %d\n", tval);
+    if (tval < 7000)
+        battery_charge_voltage = 8700;
+    else
+        battery_charge_voltage = tval;
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x16, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x16 r=%d\n", res);
+    }
+    DEBUG(" stat: 0x%04x\n", tval);
+    // battery_status = tval;
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x17, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x17 r=%d\n", res);
+    }
+    DEBUG(" cycle#: %d\n", tval);
+    battery_cycle_count = tval;
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x18, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x18 r=%d\n", res);
+    }
+    DEBUG(" des-cap: %d\n", tval);
+    battery_design_capacity = tval;
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x19, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x19 r=%d\n", res);
+    }
+    DEBUG(" des-volt: %d\n", tval);
+    battery_design_voltage = tval;
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x1b, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x1b r=%d\n", res);
+    }
+    DEBUG(" man date: 0x%04x\n", tval);
+    battery_manufacturing_date = tval;
+
+    res = i2c_get(&I2C_0, BAT_GAS_GAUGE_ADDR, 0x1c, &tval, 2);
+    if (res < 0) {
+        DEBUG(" 0x1c r=%d\n", res);
+    }
+    DEBUG(" serial#: %d\n", tval);
 
     return true;
+}
+
+void board_battery_update_state(void)
+{
+    if (sbs_battery)
+        update_gas_gauge();
+    else {
+        battery_voltage = board_battery_get_voltage();
+        battery_current = board_battery_get_current();
+        battery_charge = board_battery_get_charge();
+    }
 }
 
 // try to figure out which battery we have
@@ -284,7 +424,7 @@ void board_battery_init(void)
     battery_voltage = 0;
     battery_temp = 0;
     battery_current = 0;
-    battery_charge = 0;
+    // battery_charge = 100;
     battery_remaining_capacity = 0;
     battery_full_capacity = 0;
     battery_design_capacity = 0;
@@ -292,7 +432,10 @@ void board_battery_init(void)
     battery_status &= ~BATTERY_INITIALIZED;
 
     battery_charger_disable();
-    charger_input_current = 1024; // about 1A @ 19V ~= 20W
+    // charger_input_current = 1024; // about 1A @ 19V ~= 20W
+    charger_input_current = 3420; // max current of 65W charger
+
+    gpio_set(&CHG_CELL_CFG, false);
 
     battery_present = board_battery_detect();
 
@@ -300,37 +443,43 @@ void board_battery_init(void)
         battery_voltage = board_battery_get_voltage();
         if (read_eeprom()) {
             DEBUG("I: 3-cell bat found\n");
+            // gpio_set(&CHG_CELL_CFG, false);
             battery_status |= BATTERY_INITIALIZED;
             sbs_battery = false;
 
-            gpio_set(&CHG_CELL_CFG, false);
             // charger_input_current = 0x1100;
             charger_min_system_voltage = 0x1E00;
+
+            battery_charger_enable();
+            battery_charger_disable();
         } else {
             if (probe_gas_gauge()) {
                 DEBUG("I: 4-cell bat found\n");
-                battery_temp = 0;
-                battery_current = 0;
-                battery_charge = 0;
-                battery_remaining_capacity = 0;
-                battery_full_capacity = 8800;
-                battery_design_capacity = 8800;
-                battery_design_voltage = 7600;
+                // gpio_set(&CHG_CELL_CFG, true);
+
+                // battery_temp = 0;
+                // battery_current = 0;
+                // battery_charge = 0;
+                // battery_remaining_capacity = 0;
+                // battery_full_capacity = 8800;
+                // battery_design_capacity = 8800;
+                // battery_design_voltage = 7600;
                 battery_charge_current = 1760;
-                battery_charge_voltage = 8700;
+                // battery_charge_voltage = 8700;
                 battery_min_voltage = 6000;
 
-                gpio_set(&CHG_CELL_CFG, true);
                 // charger_input_current = 0x1100;
                 charger_min_system_voltage = 0x1600;
 
                 battery_status |= BATTERY_INITIALIZED;
 
                 sbs_battery = true;
+                battery_charger_enable();
+                battery_charger_disable();
             } else {
                 DEBUG("E: unknown bat, keeping charger off!\n");
                 battery_status &= ~BATTERY_INITIALIZED;
-                gpio_set(&CHG_CELL_CFG, true);
+                // gpio_set(&CHG_CELL_CFG, true);
                 sbs_battery = false;
             }
         }
