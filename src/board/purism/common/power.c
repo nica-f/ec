@@ -671,7 +671,9 @@ void power_event(void) {
             last_time = time;
         }
 
-        GPIO_SET_DEBUG(SMC_SHUTDOWN_N, false); // XXX
+        //if (!gpio_get(&PCH_DPWROK_EC))
+        if (!gpio_get(&ALL_SYS_PWRGD_VRON))
+            GPIO_SET_DEBUG(SMC_SHUTDOWN_N, false); // XXX
 #if HAVE_XLP_OUT
         // Power off VDD3 if system should be off
         gpio_set(&XLP_OUT, 0);
