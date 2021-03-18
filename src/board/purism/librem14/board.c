@@ -119,4 +119,18 @@ void board_1s_event(void) {
                         gpio_get(&PM_SLP_S4) ? "SLP_S4" : "!SLP_S4", 
                         gpio_get(&EC_RSMRST_N) ? "EC_RSMRST" : "!EC_RSMRST");
 #endif
+#if 1
+    if (/*power_state == POWER_STATE_DS3 ||
+        power_state == POWER_STATE_S3 ||*/
+        power_state == POWER_STATE_S0) {
+        if (!gpio_get(&HEADPHONE_DET)) {
+            DEBUG("HP\n");
+            gpio_set(&MIC_SELECT, true);
+        } else {
+            DEBUG("!HP\n");
+            gpio_set(&MIC_SELECT, false);
+        }
+    } else
+        gpio_set(&MIC_SELECT, false);
+#endif
 }

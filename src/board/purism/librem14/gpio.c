@@ -165,6 +165,9 @@ struct Gpio __code KBD_BACKLIGHT_EN = GPIO(A, 6);
 
 struct Gpio __code CHG_CELL_CFG = GPIO(J, 1);
 
+struct Gpio __code HEADPHONE_DET = GPIO(I, 6);
+struct Gpio __code MIC_SELECT = GPIO(F, 0);
+
 
 void gpio_init() {
     GCR = 0x04;			// Enable LPC reset on GPD2
